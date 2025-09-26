@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Question Bank Generator</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Create, manage, and export medical question banks with AI-powered features. Perfect for medical education and exam preparation.">
+    <meta name="keywords" content="medical questions, question bank, medical exam, AI questions, medical education, USMLE">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://qbgenerator.aimedipedia.com/qBankdbGenerator.html">
+    <meta property="og:title" content="Medical Question Bank Generator - Create Medical Questions">
+    <meta property="og:description" content="Advanced medical question bank creation tool with AI assistance, import/export capabilities, and comprehensive management features.">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://qbgenerator.aimedipedia.com/qBankdbGenerator.html">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9e0.png">
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9e0.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c6fbb;
+            --primary-dark: #1a5ca1;
+            --secondary: #e8f1f9;
+            --accent: #ff6b6b;
+            --text: #333;
+            --light-text: #666;
+            --border: #ddd;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --ai-primary: #8e44ad;
+            --ai-secondary: #f4e6fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+        
+        header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; 
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px; 
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ai-card {
+            border-top: 4px solid var(--ai-primary);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--secondary);
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title .settings-icon {
+            cursor: pointer;
+            color: var(--primary);
+            transition: transform 0.2s;
+        }
+
+        .card-title .settings-icon:hover {
+            transform: rotate(30deg);
+        }
+        
+        .ai-title {
+            color: var(--ai-primary);
+            border-bottom-color: var(--ai-secondary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--light-text);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .options-container {
+            margin-top: 10px;
+        }
+        
+        .option-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .option-input input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .option-input input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: #f1f1f1;
+            color: var(--text);
+        }
+        
+        .btn-secondary:hover {
+            background: #e4e4e4;
+        }
+        
+        .btn-danger {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+        
+        .btn-ai {
+            background: var(--ai-primary);
+            color: white;
+        }
+        
+        .btn-ai:hover {
+            background: #7d3c98;
+        }
+        
+        .btn-export {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-export:hover {
+            background: #218838;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .questions-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .question-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .question-item:hover {
+            background: var(--secondary);
+        }
+        
+        .question-item.selected {
+            background: #e3eef9;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .question-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: var(--light-text);
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-category {
+            background: #e8f1f9;
+            color: var(--primary);
+        }
+        
+        .badge-exam {
+            background: #e6f7e6;
+            color: #2e7d32;
+        }
+        
+        .badge-ai {
+            background: var(--ai-secondary);
+            color: var(--ai-primary);
+        }
+
+        .dates-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.75rem;
+            color: var(--light-text);
+            margin-top: 5px;
+        }
+        
+        .search-box {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .search-box input {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .search-box button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap; 
+        }
+        
+        .filter-controls select, .filter-controls input {
+            flex: 1;
+            min-width: 150px; 
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .toast-ai {
+            background: var(--ai-primary);
+        }
+        
+        .toast-export {
+            background: #28a745;
+        }
+        
+        .toast-error {
+            background: var(--accent);
+        }
+        
+        /* Rich text editor styles */
+        .rich-text-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 8px;
+            background: #f5f5f5;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+        }
+        
+        .rich-text-toolbar button {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .rich-text-toolbar button:hover {
+            background: var(--secondary);
+        }
+        
+        .rich-text-editor {
+            min-height: 150px;
+            border: 1px solid var(--border);
+            border-radius: 0 0 6px 6px;
+            padding: 12px;
+            font-family: inherit;
+        }
+        
+        .rich-text-editor:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Image upload styles */
+        .image-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            display: none;
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+        }
+
+        .file-upload-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-upload-container input[type="file"] {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        /* AI Generation Styles */
+        .ai-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .ai-option {
+            background: var(--ai-secondary);
+            border: 1px solid #d6b1e7;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .ai-option:hover {
+            background: #e9c9f5;
+        }
+        
+        .ai-option.selected {
+            background: var(--ai-primary);
+            color: white;
+            border-color: var(--ai-primary);
+        }
+        
+        .ai-loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .ai-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--ai-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .ai-result {
+            display: none;
+            margin-top: 20px;
+            border: 1px solid #d6b1e7;
+            border-radius: 6px;
+            padding: 15px;
+            background: #fcfaff;
+        }
+        
+        .ai-result-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Export buttons */
+        .export-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* Select2 customization */
+        .select2-container--default .select2-selection--single {
+            height: 42px;
+            padding: 8px 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+        
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px;
+        }
+        
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--primary);
+        }
+        
+        /* AI Settings Panel */
+        #ai-settings-panel {
+            display: none;
+        }
+
+        #ai-settings-panel.show {
+            display: block;
+        }
+
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+            padding: 32px 32px 24px 32px;
+            min-width: 340px;
+            max-width: 95vw;
+            position: relative;
+            animation: modalIn 0.2s cubic-bezier(.4,2,.6,1) both;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #888;
+            cursor: pointer;
+        }
+        
+        @keyframes modalIn {
+            from { transform: translateY(-40px) scale(0.95); opacity: 0; }
+            to { transform: none; opacity: 1; }
+        }
+        
+        /* User Profile Styles */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+        
+        .user-email {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .user-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .user-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .guest-notice {
+            background: rgba(255, 193, 7, 0.9);
+            color: #333;
+            padding: 0.75rem 1rem;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .guest-notice i {
+            color: #ff9800;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 5px 10px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 5px;
+            }
+
+            .stat-value {
+                font-size: 1.2rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+            
+            .ai-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .export-actions {
+                flex-direction: column;
+            }
+
+            .btn, input, select, textarea {
+                font-size: 0.9rem;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>📊 Medical Question Bank Generator</h1>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-questions">0</div>
+                            <div class="stat-label">Total Questions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="ai-questions">0</div>
+                            <div class="stat-label">AI Generated</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="internal-medicine">0</div>
+                            <div class="stat-label">Internal Medicine</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Profile Section -->
+                <div id="userProfileSection" class="user-profile" style="display: none;">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-info">
+                        <div class="user-name" id="userName">User Name</div>
+                        <div class="user-email" id="userEmail">user@example.com</div>
+                    </div>
+                    <div class="user-actions">
+                        <button class="user-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Guest Notice -->
+                <div id="guestNotice" class="guest-notice" style="display: none;">
+                    <i class="fas fa-user-clock"></i>
+                    <span>Guest Mode - <a href="auth.html" style="color: #333; font-weight: bold;">Login</a> to save progress</span>
+                </div>
+                
+                <!-- Login Button (when not authenticated) -->
+                <div id="loginSection" class="user-actions" style="display: none;">
+                    <a href="auth.html" class="user-btn">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="auth.html" class="user-btn">
+                        <i class="fas fa-user-plus"></i> Sign Up
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="card">
+                    <h2 class="card-title">Add New Question</h2>
+                    <form id="question-form">
+                        <div class="form-group">
+                            <label for="exam-name">Exam Name</label>
+                            <input type="text" id="exam-name" placeholder="e.g., USMLE Step 1, USMLE Step 2, SMLE, AMC" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <select id="subject" class="searchable-select" required>
+                                <option value="">Select a subject</option>
+                                <option value="Internal Medicine">Internal Medicine</option>
+                                <option value="Surgery">Surgery</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="Obstetrics & Gynecology">Obstetrics & Gynecology</option>
+                                <option value="Psychiatry">Psychiatry</option>
+                                <option value="Radiology">Radiology</option>
+                                <option value="Pathology">Pathology</option>
+                                <option value="Pharmacology">Pharmacology</option>
+                                <option value="Microbiology">Microbiology</option>
+                                <option value="Anatomy">Anatomy</option>
+                                <option value="Physiology">Physiology</option>
+                                <option value="Biochemistry">Biochemistry</option>
+                                <option value="Immunology">Immunology</option>
+                                <option value="Cardiology">Cardiology</option>
+                                <option value="Neurology">Neurology</option>
+                                <option value="Endocrinology">Endocrinology</option>
+                                <option value="Gastroenterology">Gastroenterology</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="topic">Topic</label>
+                            <input type="text" id="topic" placeholder="Enter topic (e.g., Diabetes management, Heart anatomy)" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="question">Question</label>
+                            <div class="rich-text-toolbar">
+                                <button type="button" onclick="formatQuestionText('bold')"><strong>B</strong></button>
+                                <button type="button" onclick="formatQuestionText('italic')"><em>I</em></button>
+                                <button type="button" onclick="formatQuestionText('underline')"><u>U</u></button>
+                                <button type="button" onclick="formatQuestionText('insertUnorderedList')">• List</button>
+                                <button type="button" onclick="formatQuestionText('insertOrderedList')">1. List</button>
+                                <button type="button" onclick="insertQuestionImage()"><i class='fas fa-image'></i> Image</button>
+                                <input type="file" id="question-image-insert" accept="image/*" style="display:none" />
+                            </div>
+                            <div id="question-rich" class="rich-text-editor" contenteditable="true" placeholder="Enter the question..."></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Attach Image (Optional)</label>
+                            <div class="image-upload">
+                                <input type="file" id="question-image" accept="image/*">
+                                <img id="image-preview" class="image-preview" alt="Image preview">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Options</label>
+                            <div class="options-container" id="options-container">
+                                <!-- Options will be added by JavaScript -->
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="addOption()" style="margin-top: 10px;">+ Add Option</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="explanation">Explanation</label>
+                            <div class="rich-text-toolbar">
+                                <button type="button" onclick="formatText('bold')"><strong>B</strong></button>
+                                <button type="button" onclick="formatText('italic')"><em>I</em></button>
+                                <button type="button" onclick="formatText('underline')"><u>U</u></button>
+                                <button type="button" onclick="formatText('insertUnorderedList')">• List</button>
+                                <button type="button" onclick="formatText('insertOrderedList')">1. List</button>
+                                <button type="button" onclick="insertImage()"><i class="fas fa-image"></i> Image</button>
+                            </div>
+                            <div id="explanation" class="rich-text-editor" contenteditable="true"></div>
+                            <button type="button" class="btn btn-ai" id="generate-explanation-btn" style="margin-top:10px;">Generate AI Explanation</button>
+                        </div>
+                        
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Save Question</button>
+                            <button type="reset" class="btn btn-secondary" id="reset-btn">Clear Form</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="middle-panel">
+                <div class="card ai-card">
+                    <h2 class="card-title ai-title">
+                        AI Question Generation <i class="fas fa-robot"></i>
+                        <i class="fas fa-cog settings-icon" onclick="toggleAiSettings()"></i>
+                    </h2>
+                    
+                    <div class="form-group">
+                        <label for="ai-exam-name">Exam Name</label>
+                        <input type="text" id="ai-exam-name" placeholder="e.g., USMLE Step 1, USMLE Step 2, SMLE, AMC" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ai-subject">Subject Area</label>
+                        <select id="ai-subject" class="searchable-select" required>
+                            <option value="">Select a subject</option>
+                            <option value="Internal Medicine">Internal Medicine</option>
+                            <option value="Surgery">Surgery</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Obstetrics & Gynecology">Obstetrics & Gynecology</option>
+                            <option value="Psychiatry">Psychiatry</option>
+                            <option value="Radiology">Radiology</option>
+                            <option value="Pathology">Pathology</option>
+                            <option value="Pharmacology">Pharmacology</option>
+                            <option value="Microbiology">Microbiology</option>
+                            <option value="Anatomy">Anatomy</option>
+                            <option value="Physiology">Physiology</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ai-topic">Topic or Concept</label>
+                        <input type="text" id="ai-topic" placeholder="e.g., Diabetes management, Heart anatomy" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ai-context">Additional Context (Optional)</label>
+                        <textarea id="ai-context" placeholder="Provide additional details, clinical vignettes, or specific requirements here."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ai-file">Upload Document/Image (Optional)</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="ai-file">
+                            <button type="button" class="btn btn-secondary" id="ai-file-btn" onclick="processAiFile()">Process File</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ai-url">Chat with URL (Optional)</label>
+                        <div class="url-input-container">
+                            <input type="text" id="ai-url" placeholder="Enter a URL to summarize and use as context">
+                            <button type="button" class="btn btn-secondary" id="ai-url-btn" onclick="processAiUrl()">Process URL</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-ai" onclick="generateQuestion()" style="width: 100%;">
+                        <i class="fas fa-magic"></i> Generate Question
+                    </button>
+                    
+                    <div class="ai-loading" id="ai-loading">
+                        <div class="spinner"></div>
+                        <p>Generating question with AI...</p>
+                    </div>
+                    
+                    <div class="ai-result" id="ai-result">
+                        <h4>AI-Generated Question</h4>
+                        <div id="ai-question-text"></div>
+                        <div class="ai-result-actions">
+                            <button class="btn btn-ai" onclick="useAiQuestion()">
+                                <i class="fas fa-save"></i> Use This Question
+                            </button>
+                            <button class="btn btn-secondary" onclick="regenerateQuestion()">
+                                <i class="fas fa-redo"></i> Regenerate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="card">
+                    <h2 class="card-title">Question Bank</h2>
+                    
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Search questions...">
+                        <button class="btn btn-primary" onclick="searchQuestions()">Search</button>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <select id="filter-subject" class="searchable-select">
+                            <option value="">All Subjects</option>
+                            <option value="Internal Medicine">Internal Medicine</option>
+                            <option value="Surgery">Surgery</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Obstetrics & Gynecology">Obstetrics & Gynecology</option>
+                            <option value="Psychiatry">Psychiatry</option>
+                            <option value="Radiology">Radiology</option>
+                            <option value="Pathology">Pathology</option>
+                            <option value="Pharmacology">Pharmacology</option>
+                            <option value="Microbiology">Microbiology</option>
+                            <option value="Anatomy">Anatomy</option>
+                            <option value="Physiology">Physiology</option>
+                        </select>
+                        
+                        <select id="filter-exam" class="searchable-select">
+                            <option value="">All Exams</option>
+                            <option value="USMLE Step 1">USMLE Step 1</option>
+                            <option value="USMLE Step 2">USMLE Step 2</option>
+                            <option value="USMLE Step 3">USMLE Step 3</option>
+                            <option value="MCAT">MCAT</option>
+                            <option value="NCLEX-RN">NCLEX-RN</option>
+                            <option value="NCLEX-PN">NCLEX-PN</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <input type="text" id="filter-topic" placeholder="Filter by topic...">
+                        <select id="filter-source">
+                            <option value="">All Sources</option>
+                            <option value="manual">Manual Entry</option>
+                            <option value="ai">AI Generated</option>
+                        </select>
+                    </div>
+                    
+                    <div class="export-actions">
+                        <button class="btn btn-export" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                        <button class="btn btn-export" onclick="exportToPDF()">
+                            <i class="fas fa-file-pdf"></i> Export to PDF
+                        </button>
+                        <button class="btn btn-export" onclick="exportToJSON()">
+                            <i class="fas fa-file-code"></i> Export as JSON
+                        </button>
+                        <input type="file" id="import-json-input" accept="application/json" style="display:none" />
+                        <button class="btn btn-import" onclick="document.getElementById('import-json-input').click()">
+                            <i class="fas fa-file-import"></i> Import JSON
+                        </button>
+                        <input type="file" id="import-excel-input" accept=".xlsx,.xls" style="display:none" />
+                        <button class="btn btn-import" onclick="document.getElementById('import-excel-input').click()">
+                            <i class="fas fa-file-import"></i> Import from Excel
+                        </button>
+                        <a href="sample_import_questions.csv" download class="btn btn-link" style="margin-left:10px; color:#2c6fbb; text-decoration:underline;">Download Sample Excel/CSV</a>
+                    </div>
+                    
+                    <div class="questions-list" id="questions-list">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">Question saved successfully!</div>
+    <div class="toast toast-ai" id="toast-ai">AI question generated successfully!</div>
+    <div class="toast toast-export" id="toast-export">Export completed successfully!</div>
+    <div class="toast toast-error" id="toast-error">An error occurred.</div>
+
+    <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+
+    <!-- Modal for AI Settings -->
+    <div id="ai-settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="toggleAiSettings()">&times;</button>
+            <h2 class="card-title">AI Configuration</h2>
+            <div class="form-group">
+                <label for="api-key">API Key</label>
+                <input type="password" id="api-key" placeholder="Enter your API key">
+            </div>
+            <div class="form-group">
+                <label for="ai-model">AI Model</label>
+                <select id="ai-model">
+                    <optgroup label="OpenAI">
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </optgroup>
+                    <optgroup label="Google">
+                        <option value="gemini-1.5-pro-latest">Gemini 1.5 Pro</option>
+                        <option value="gemini-1.0-pro">Gemini 1.0 Pro</option>
+                    </optgroup>
+                    <optgroup label="DeepSeek">
+                        <option value="deepseek-chat">DeepSeek Chat</option>
+                    </optgroup>
+                </select>
+            </div>
+            <button class="btn btn-secondary" onclick="saveApiSettings()" style="width: 100%;">
+                <i class="fas fa-save"></i> Save API Settings
+            </button>
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="api-status">API Status</label>
+                <div id="api-status" style="padding: 10px; border-radius: 6px; background: #f0f0f0;">
+                    Not configured
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        // --- Question Bank App Main Script ---
+        // This script handles all core logic for the Medical Question Bank Generator web app.
+        // Features: Add, edit, delete, import/export, AI generation, image insertion, and responsive UI.
+
+        // Initialize the question bank from localStorage or as an empty array
+        let questionBank = []; // Initialize as empty, will be loaded after auth
+        let editingId = null; // Track which question is being edited
+        let currentAiQuestion = null; // Store the current AI-generated question
+        let openAiApiKey = localStorage.getItem('openaiApiKey') || '';
+        let openAiModel = localStorage.getItem('openaiModel') || 'gpt-3.5-turbo';
+        let aiFileContent = null; // For file/URL context in AI generation
+        
+        // DOM elements
+        const questionForm = document.getElementById('question-form');
+        const questionsList = document.getElementById('questions-list');
+        const toast = document.getElementById('toast');
+        const toastAi = document.getElementById('toast-ai');
+        const toastExport = document.getElementById('toast-export');
+        const toastError = document.getElementById('toast-error');
+        const imageInput = document.getElementById('question-image');
+        const imagePreview = document.getElementById('image-preview');
+        const aiLoading = document.getElementById('ai-loading');
+        const aiResult = document.getElementById('ai-result');
+        const aiQuestionText = document.getElementById('ai-question-text');
+        const apiKeyInput = document.getElementById('api-key');
+        const aiModelSelect = document.getElementById('ai-model');
+        const apiStatus = document.getElementById('api-status');
+        const imageUploadInput = document.getElementById('image-upload-input');
+        const aiSettingsModal = document.getElementById('ai-settings-modal');
+
+        // --- Utility Functions ---
+        // Show a toast notification
+        function showToast(message, type) {
+            const currentToast = document.querySelector('.toast.show');
+            if (currentToast) {
+                currentToast.classList.remove('show');
+            }
+            let selectedToast = toast;
+            if (type === 'toast-ai') selectedToast = toastAi;
+            if (type === 'toast-export') selectedToast = toastExport;
+            if (type === 'toast-error') selectedToast = toastError;
+
+            selectedToast.textContent = message;
+            selectedToast.classList.add('show');
+            setTimeout(() => {
+                selectedToast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Save API settings to localStorage
+        function saveApiSettings() {
+            openAiApiKey = apiKeyInput.value.trim();
+            openAiModel = aiModelSelect.value;
+            localStorage.setItem('openaiApiKey', openAiApiKey);
+            localStorage.setItem('openaiModel', openAiModel);
+            updateApiStatus('API settings saved. Please note the key should match the selected model.', 'success');
+        }
+
+        // Toggle the AI settings modal
+        function toggleAiSettings() {
+            const modal = document.getElementById('ai-settings-modal');
+            modal.classList.toggle('show');
+        }
+
+        // --- Question CRUD Functions ---
+        // Save the question bank to localStorage
+        function saveQuestionBank() {
+            const storageKey = getUserStorageKey('medicalQuestionBank');
+            localStorage.setItem(storageKey, JSON.stringify(questionBank));
+        }
+
+        // Render the list of questions in the Question Bank
+        function renderQuestions() {
+            questionsList.innerHTML = '';
+            const filterSubject = $('#filter-subject').val();
+            const filterExam = $('#filter-exam').val();
+            const filterTopic = document.getElementById('filter-topic').value.toLowerCase();
+            const filterSource = document.getElementById('filter-source').value;
+
+            const filteredQuestions = questionBank.filter(q => {
+                const matchesSubject = !filterSubject || q.subject === filterSubject;
+                const matchesExam = !filterExam || q.examName === filterExam;
+                const matchesTopic = !filterTopic || (q.topic && q.topic.toLowerCase().includes(filterTopic));
+                const matchesSource = !filterSource || q.source === filterSource;
+                return matchesSubject && matchesExam && matchesTopic && matchesSource;
+            });
+            
+            if (filteredQuestions.length === 0) {
+                questionsList.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--light-text);">No questions found.</div>`;
+                return;
+            }
+
+            filteredQuestions.forEach((q, index) => {
+                const questionItem = document.createElement('div');
+                questionItem.classList.add('question-item');
+                questionItem.setAttribute('data-id', q.id);
+                questionItem.innerHTML = `
+                    <div class="question-text">${index + 1}. ${q.question}</div>
+                    <div class="question-meta">
+                        <span class="badge badge-exam">${q.examName}</span>
+                        <span class="badge badge-category">${q.subject}</span>
+                        <span class="badge badge-topic">${q.topic}</span>
+                        ${q.source === 'ai' ? `<span class="badge badge-ai">AI Generated</span>` : ''}
+                    </div>
+                    <div class="dates-meta">
+                        <span>Created: ${q.createdAt || 'N/A'}</span>
+                        <span>Updated: ${q.updatedAt || 'N/A'}</span>
+                    </div>
+                    <button class="btn btn-danger btn-delete-question" title="Delete" type="button"><i class="fas fa-trash"></i></button>
+                `;
+                questionItem.querySelector('.btn-delete-question').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deleteQuestion(q.id);
+                });
+                questionItem.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('btn-delete-question') && !e.target.closest('.btn-delete-question')) {
+                        editQuestion(q.id);
+                    }
+                });
+                questionsList.appendChild(questionItem);
+            });
+        }
+        
+        // Edit a question (populate the form for editing)
+        function editQuestion(id) {
+            editingId = id;
+            const question = questionBank.find(q => q.id === id);
+            if (!question) return;
+
+            document.getElementById('exam-name').value = question.examName;
+            document.getElementById('subject').value = question.subject;
+            $('#subject').trigger('change');
+            document.getElementById('topic').value = question.topic;
+            document.getElementById('question-rich').innerHTML = question.question;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            question.options.forEach((opt, index) => {
+                const optionHtml = createOptionHtml(opt);
+                optionsContainer.appendChild(optionHtml);
+                if (String.fromCharCode(65 + index) === question.correctAnswer) {
+                    optionHtml.querySelector('input[type="radio"]').checked = true;
+                }
+            });
+
+            document.getElementById('explanation').innerHTML = question.explanation;
+            
+            if (question.image) {
+                imagePreview.src = question.image;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.style.display = 'none';
+            }
+
+            document.querySelector('#question-form button[type="submit"]').textContent = 'Update Question';
+            showToast('Editing question...', 'toast-ai');
+        }
+
+        // Delete a question from the Question Bank
+        function deleteQuestion(id) {
+            if (confirm('Are you sure you want to delete this question?')) {
+                questionBank = questionBank.filter(q => q.id !== id);
+                saveQuestionBank();
+                renderQuestions();
+                updateStats();
+                showToast('Question deleted!', 'toast');
+            }
+        }
+
+        // --- Option Management ---
+        // Create a new option input HTML element
+        function createOptionHtml(value = '', placeholder = '') {
+            const div = document.createElement('div');
+            div.classList.add('option-input');
+            div.innerHTML = `
+                <input type="radio" name="correct-answer">
+                <input type="text" placeholder="${placeholder}" value="${value}" required>
+                <button type="button" class="btn btn-danger" onclick="removeOption(this)">×</button>
+            `;
+            return div;
+        }
+
+        // Add a new option to the options container
+        function addOption() {
+            const optionsContainer = document.getElementById('options-container');
+            const optionCount = optionsContainer.children.length;
+            if (optionCount >= 7) {
+                showToast('You can only have up to 7 options (A-G).', 'toast-error');
+                return;
+            }
+            const placeholder = `Option ${String.fromCharCode(65 + optionCount)}`;
+            const newOption = createOptionHtml('', placeholder);
+            optionsContainer.appendChild(newOption);
+        }
+
+        // Remove an option from the options container
+        function removeOption(button) {
+            const optionsContainer = document.getElementById('options-container');
+            if (optionsContainer.children.length > 2) {
+                button.closest('.option-input').remove();
+            } else {
+                showToast('You must have at least 2 options.', 'toast-error');
+            }
+        }
+        
+        // --- Stats and Export ---
+        // Update the dashboard stats
+        function updateStats() {
+            document.getElementById('total-questions').textContent = questionBank.length;
+            document.getElementById('ai-questions').textContent = questionBank.filter(q => q.source === 'ai').length;
+            document.getElementById('internal-medicine').textContent = questionBank.filter(q => q.subject === 'Internal Medicine').length;
+        }
+
+        // Export the question bank to Excel
+        function exportToExcel() {
+            const dataToExport = [
+                ["Export Date:", new Date().toLocaleString()],
+                [],
+                ["Exam Name", "Subject", "Topic", "Question", "Option A", "Option B", "Option C", "Option D", "Correct Answer", "Explanation", "Source", "Created At", "Updated At"]
+            ];
+            
+            questionBank.forEach(q => {
+                const row = [
+                    q.examName,
+                    q.subject,
+                    q.topic,
+                    q.question,
+                    q.options[0],
+                    q.options[1],
+                    q.options[2] || '',
+                    q.options[3] || '',
+                    q.correctAnswer,
+                    q.explanation.replace(/<[^>]*>?/gm, ''),
+                    q.source,
+                    q.createdAt,
+                    q.updatedAt
+                ];
+                dataToExport.push(row);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Questions");
+            XLSX.writeFile(wb, "Medical_Questions.xlsx");
+            showToast('Exported to Excel!', 'toast-export');
+        }
+
+        // Export the question bank to PDF
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text("Medical Exam Question Bank", 10, 10);
+            doc.setFontSize(10);
+            doc.text(`Export Date: ${new Date().toLocaleString()}`, 10, 18);
+            
+            doc.setFontSize(12);
+            let y = 30;
+
+            questionBank.forEach((q, index) => {
+                if (y > 280) {
+                    doc.addPage();
+                    y = 10;
+                }
+                const questionText = `${index + 1}. ${q.question}`;
+                const optionsText = q.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n');
+                const answerText = `Correct Answer: ${q.correctAnswer}`;
+                const explanationText = `Explanation: ${q.explanation.replace(/<[^>]*>?/gm, '')}`;
+                const metaText = `Created: ${q.createdAt || 'N/A'} | Updated: ${q.updatedAt || 'N/A'}`;
+
+                const lines = doc.splitTextToSize(
+                    `${questionText}\n\n${optionsText}\n\n${answerText}\n${explanationText}\n\n${metaText}`,
+                    180
+                );
+                doc.text(lines, 10, y);
+                y += doc.getTextDimensions(lines).h + 10;
+            });
+            doc.save("Medical_Questions.pdf");
+            showToast('Exported to PDF!', 'toast-export');
+        }
+
+        // Export question bank as JSON file
+        function exportToJSON() {
+            const dataStr = JSON.stringify(questionBank, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'question_bank.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Exported as JSON!', 'toast-export');
+        }
+
+        // Import question bank from JSON file
+        const importJsonInput = document.getElementById('import-json-input');
+        importJsonInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        questionBank = imported;
+                        saveQuestionBank();
+                        renderQuestions();
+                        updateStats();
+                        showToast('Imported from JSON!', 'toast-export');
+                    } else {
+                        showToast('Invalid JSON format.', 'toast-error');
+                    }
+                } catch (err) {
+                    showToast('Failed to import JSON.', 'toast-error');
+                }
+                importJsonInput.value = '';
+            };
+            reader.readAsText(file);
+        });
+        // --- Search and Filter ---
+        // Search/filter questions
+        function searchQuestions() {
+            renderQuestions();
+        }
+
+        // --- Form Submission ---
+        // Handle add/update question form submission
+        questionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+    
+            const questionText = document.getElementById('question-rich').innerHTML;
+            const optionsInputs = document.querySelectorAll('#options-container input[type="text"]');
+            const options = Array.from(optionsInputs).map(input => input.value);
+    
+            const correctRadio = document.querySelector('input[name="correct-answer"]:checked');
+            if (!correctRadio) {
+                showToast('Please select a correct answer.', 'toast-error');
+                return;
+            }
+            const correctIndex = Array.from(optionsInputs).findIndex(input => input === correctRadio.nextElementSibling);
+            const correctAnswer = String.fromCharCode(65 + correctIndex);
+
+            const explanation = document.getElementById('explanation').innerHTML;
+            const now = new Date().toLocaleString();
+
+            const questionData = {
+                examName: document.getElementById('exam-name').value,
+                subject: document.getElementById('subject').value,
+                topic: document.getElementById('topic').value,
+                question: questionText,
+                options: options,
+                correctAnswer: correctAnswer,
+                explanation: explanation,
+                source: 'manual',
+                image: imagePreview.style.display === 'block' ? imagePreview.src : null
+            };
+
+            if (editingId !== null) {
+                const questionIndex = questionBank.findIndex(q => q.id === editingId);
+                questionBank[questionIndex] = { ...questionBank[questionIndex], ...questionData, updatedAt: now };
+                editingId = null;
+                document.querySelector('#question-form button[type="submit"]').textContent = 'Update Question';
+                showToast('Question updated successfully!', 'toast');
+            } else {
+                questionData.id = Date.now();
+                questionData.createdAt = now;
+                questionData.updatedAt = now;
+                questionBank.unshift(questionData);
+                showToast('Question saved successfully!', 'toast');
+            }
+
+            saveQuestionBank();
+            renderQuestions();
+            updateStats();
+            questionForm.reset();
+            document.getElementById('question-rich').innerHTML = '';
+            document.getElementById('explanation').innerHTML = '';
+            imagePreview.style.display = 'none';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            editingId = null;
+            document.querySelector('#question-form button[type="submit"]').textContent = 'Save Question';
+            document.getElementById('explanation').innerHTML = '';
+            imagePreview.style.display = 'none';
+        });
+
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        });
+
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        // For question rich text
+        function formatQuestionText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        function insertQuestionImage() {
+            document.getElementById('question-image-insert').click();
+        }
+
+        document.getElementById('question-image-insert').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = `<img src="${e.target.result}" style="max-width: 100%; display: block; margin-top: 10px;">`;
+                    insertHtmlAtCursorInQuestion(img);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function insertHtmlAtCursorInQuestion(html) {
+            let sel, range;
+            const questionDiv = document.getElementById('question-rich');
+            questionDiv.focus();
+            if (window.getSelection) {
+                sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    range = sel.getRangeAt(0);
+                    const el = document.createElement('div');
+                    el.innerHTML = html;
+                    const frag = document.createDocumentFragment();
+                    let node, lastNode;
+                    while ((node = el.firstChild)) {
+                        lastNode = frag.appendChild(node);
+                    }
+                    range.deleteContents();
+                    range.insertNode(frag);
+                }
+            }
+        }
+
+        function handleExplanationImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = `<img src="${e.target.result}" style="max-width: 100%; display: block; margin-top: 10px;">`;
+                    document.getElementById('explanation').insertAdjacentHTML('beforeend', img);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- AI Generation ---
+        // Generate AI explanation for a question
+        document.getElementById('generate-explanation-btn').addEventListener('click', async function() {
+            // Gather question and options
+            const question = document.getElementById('question').value.trim();
+            const optionsNodes = document.querySelectorAll('#options-container .option-input');
+            let options = [];
+            let correctIndex = -1;
+            optionsNodes.forEach((node, idx) => {
+                const text = node.querySelector('input[type="text"]').value.trim();
+                options.push(text);
+                if (node.querySelector('input[type="radio"]').checked) correctIndex = idx;
+            });
+            if (!question || options.length < 2 || correctIndex === -1) {
+                showToast('Please enter the question, at least two options, and select the correct answer.', 'toast-error');
+                return;
+            }
+            const correctOption = options[correctIndex];
+            // Compose prompt
+            let prompt = `You are an expert medical educator. Provide an evidence-based explanation for the following question.\n\nFirst, give a brief introduction about the main topic of the question.\nThen, explain why the correct option is correct, citing evidence-based medicine (EBM) or clinical guidelines if possible.\nThen, for each incorrect option, explain one by one why it is incorrect, also based on EBM.\n\nQuestion: ${question}\nOptions:`;
+            options.forEach((opt, i) => {
+                prompt += `\n${String.fromCharCode(65+i)}. ${opt}`;
+            });
+            prompt += `\n\nCorrect Answer: ${String.fromCharCode(65+correctIndex)}\n\nFormat the response as follows:\nIntroduction: ...\nCorrect Option (${String.fromCharCode(65+correctIndex)}): ...\nIncorrect Options:\nA: ...\nB: ...\nC: ...\nD: ...\n(Include only the relevant options)\nAll explanations must be based on evidence-based medicine.`;
+            // Use existing API config
+            const apiKey = localStorage.getItem('openaiApiKey') || '';
+            const model = localStorage.getItem('openaiModel') || 'gpt-3.5-turbo';
+            if (!apiKey) {
+                showToast('Please enter your API key in the AI Configuration.', 'toast-error');
+                return;
+            }
+            // Prepare OpenAI API call
+            const apiUrl = 'https://api.openai.com/v1/chat/completions';
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            };
+            const messages = [
+                { role: 'system', content: 'You are a medical education assistant. Give concise, clear explanations.' },
+                { role: 'user', content: prompt }
+            ];
+            const body = JSON.stringify({ model, messages });
+            // Show loading
+            const explanationDiv = document.getElementById('explanation');
+            explanationDiv.innerHTML = '<em>Generating explanation with AI...</em>';
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers, body });
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                let content = data.choices[0].message.content;
+                explanationDiv.innerHTML = content.replace(/\n/g, '<br>');
+                showToast('AI explanation generated!', 'toast-ai');
+            } catch (err) {
+                explanationDiv.innerHTML = '';
+                showToast('Failed to generate explanation.', 'toast-error');
+            }
+        });
+        document.getElementById('import-excel-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+                // Expect columns: Question, Options, Answer, Subject, Exam, Topic, Source
+                let imported = 0;
+                json.forEach(row => {
+                    if (row.Question && row.Answer) {
+                        questionBank.push({
+                            question: row.Question,
+                            options: row.Options ? row.Options.split(';') : [],
+                            answer: row.Answer,
+                            subject: row.Subject || '',
+                            exam: row.Exam || '',
+                            topic: row.Topic || '',
+                            source: row.Source || 'imported'
+                        });
+                        imported++;
+                    }
+                });
+                localStorage.setItem('medicalQuestionBank', JSON.stringify(questionBank));
+                if (typeof renderQuestions === 'function') renderQuestions();
+                showToast(imported + ' questions imported from Excel!', 'toast-export');
+                e.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        });
+        
+        // --- Authentication Functions ---
+        let currentUser = null;
+
+        function initAuth() {
+            // Check for user session
+            const userSession = localStorage.getItem('userSession');
+            if (userSession) {
+                try {
+                    currentUser = JSON.parse(userSession);
+                    displayUserProfile(currentUser);
+                } catch (error) {
+                    console.error('Error parsing user session:', error);
+                    localStorage.removeItem('userSession');
+                    showLoginSection();
+                }
+            } else {
+                showLoginSection();
+            }
+
+            // Add logout event listener
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+        }
+
+        function displayUserProfile(user) {
+            const userProfileSection = document.getElementById('userProfileSection');
+            const guestNotice = document.getElementById('guestNotice');
+            const loginSection = document.getElementById('loginSection');
+            
+            // Hide other sections
+            guestNotice.style.display = 'none';
+            loginSection.style.display = 'none';
+            
+            // Show user profile
+            userProfileSection.style.display = 'flex';
+            
+            // Update user info
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            const userEmail = document.getElementById('userEmail');
+            
+            if (user.isGuest) {
+                userAvatar.textContent = 'G';
+                userAvatar.style.background = 'rgba(255, 193, 7, 0.8)';
+                userName.textContent = 'Guest User';
+                userEmail.textContent = 'Limited features';
+                guestNotice.style.display = 'flex';
+                userProfileSection.style.display = 'none';
+            } else {
+                // Get user initials
+                const initials = user.displayName 
+                    ? user.displayName.split(' ').map(n => n[0]).join('').toUpperCase()
+                    : user.email[0].toUpperCase();
+                
+                userAvatar.textContent = initials;
+                userAvatar.style.background = 'rgba(255, 255, 255, 0.3)';
+                userName.textContent = user.displayName || 'User';
+                userEmail.textContent = user.email;
+            }
+
+            // Load user-specific data
+            updateQuestionBankForUser();
+        }
+
+        function showLoginSection() {
+            const userProfileSection = document.getElementById('userProfileSection');
+            const guestNotice = document.getElementById('guestNotice');
+            const loginSection = document.getElementById('loginSection');
+            
+            userProfileSection.style.display = 'none';
+            guestNotice.style.display = 'none';
+            loginSection.style.display = 'flex';
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout? Your questions will remain saved locally.')) {
+                localStorage.removeItem('userSession');
+                currentUser = null;
+                showToast('Logged out successfully', 'success');
+                showLoginSection();
+            }
+        }
+
+        function getUserStorageKey(key) {
+            // Create user-specific storage keys for logged-in users
+            if (currentUser && !currentUser.isGuest) {
+                return `${key}_${currentUser.uid}`;
+            }
+            return key; // Use default key for guests and fallback
+        }
+
+        function loadUserQuestionBank() {
+            // Load user-specific question bank
+            const storageKey = getUserStorageKey('medicalQuestionBank');
+            const stored = localStorage.getItem(storageKey);
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function updateQuestionBankForUser() {
+            // Reload question bank for current user
+            questionBank = loadUserQuestionBank();
+            renderQuestions();
+            updateStats();
+        }
+        
+        // Initialize the application
+        function initApp() {
+            // Initialize authentication
+            initAuth();
+            
+            if (openAiApiKey) {
+                apiKeyInput.value = openAiApiKey;
+                updateApiStatus('API key loaded.', 'success');
+            }
+            
+            if (openAiModel) {
+                aiModelSelect.value = openAiModel;
+            }
+            
+            $('.searchable-select').select2({
+                placeholder: "Select an option",
+                allowClear: true
+            });
+            
+            $('#filter-subject').on('change', renderQuestions);
+            $('#filter-exam').on('change', renderQuestions);
+            $('#filter-source').on('change', renderQuestions);
+            
+            document.querySelectorAll('.ai-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.ai-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            imageUploadInput.addEventListener('change', handleExplanationImageUpload);
+            
+            renderQuestions();
+            updateStats();
+            
+            addOption();
+            addOption();
+        }
+        
+        function updateApiStatus(message, type = 'info') {
+            apiStatus.textContent = message;
+            apiStatus.style.background = type === 'success' ? '#e6f7e6' : (type === 'error' ? '#fde6e6' : '#f0f0f0');
+            apiStatus.style.color = type === 'success' ? '#218838' : (type === 'error' ? '#e63737' : '#333');
+        }
+
+        // --- AI Generation ---
+        // Generate AI question based on user inputs and AI model
+        async function generateQuestion() {
+            const aiTopic = document.getElementById('ai-topic').value;
+            const aiSubject = document.getElementById('ai-subject').value;
+            const aiExamName = document.getElementById('ai-exam-name').value || 'Medical Exam';
+            const aiContext = document.getElementById('ai-context').value;
+            const model = document.getElementById('ai-model').value;
+            const apiKey = document.getElementById('api-key').value.trim();
+            
+            if (!apiKey) {
+                showToast('Please enter your API key.', 'toast-error');
+                return;
+            }
+
+            if (!aiTopic || !aiSubject) {
+                showToast('Please enter a subject and topic for AI generation.', 'toast-error');
+                return;
+            }
+
+            aiLoading.style.display = 'block';
+            aiResult.style.display = 'none';
+
+            let promptText = `Generate a critical, hard-difficulty multiple-choice question for the "${aiExamName}" on the subject of "${aiSubject}" about the topic "${aiTopic}". The question must have exactly four options (A, B, C, D).`;
+
+            if (aiContext) {
+                promptText += `\n\nAdditional context or requirements: ${aiContext}`;
+            }
+
+            promptText += `\n\nThe explanation must contain a short introduction, a detailed explanation of the correct option, and a detailed breakdown of why each of the other three options is incorrect. The final response must be a single JSON object with the following structure, with NO additional text or markdown outside of the JSON block:
+                {
+                    "question": "[The question text]",
+                    "options": {
+                        "A": "[Option A text]",
+                        "B": "[Option B text]",
+                        "C": "[Option C text]",
+                        "D": "[Option D text]"
+                    },
+                    "correctAnswer": "[The letter of the correct option, e.g., 'B']",
+                    "explanation": {
+                        "introduction": "[Short introduction]",
+                        "correctExplanation": "[Detailed explanation for the correct option]",
+                        "incorrectExplanations": {
+                            "A": "[Reason why Option A is incorrect]",
+                            "B": "[Reason why Option B is incorrect]",
+                            "C": "[Reason why Option C is incorrect]",
+                            "D": "[Reason why Option D is incorrect]"
+                        }
+                    }
+                }`;
+
+            const messages = [
+                { role: "system", content: "You are a specialized medical education assistant. Your task is to generate realistic, critical, and hard-difficulty medical exam questions. Ensure your responses are formatted exactly as a valid JSON object." },
+                { role: "user", content: promptText }
+            ];
+
+            if (aiFileContent) {
+                messages.push({ role: "user", content: `Use the following content from a document or image as additional context: ${aiFileContent}` });
+            }
+
+            let apiUrl, requestBody, headers;
+
+            // Configure API call based on selected model
+            if (model.startsWith('gpt')) {
+                apiUrl = 'https://api.openai.com/v1/chat/completions';
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                };
+                requestBody = JSON.stringify({
+                    model: model,
+                    messages: messages,
+                    response_format: { type: "json_object" }
+                });
+            } else if (model.startsWith('gemini')) {
+                apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                headers = {
+                    'Content-Type': 'application/json'
+                };
+                requestBody = JSON.stringify({
+                    "contents": [{
+                        "role": "user",
+                        "parts": [{ "text": promptText }]
+                    }],
+                    "generationConfig": {
+                        "response_mime_type": "application/json"
+                    },
+                    "safetySettings": [
+                        { "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE" },
+                        { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE" },
+                        { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE" },
+                        { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE" }
+                    ]
+                });
+            } else if (model.startsWith('deepseek')) {
+                apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+                headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                };
+                requestBody = JSON.stringify({
+                    model: model,
+                    messages: messages,
+                    stream: false
+                });
+            } else {
+                showToast('Selected model is not supported.', 'toast-error');
+                aiLoading.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: requestBody
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message);
+                }
+
+                const data = await response.json();
+                const aiResponse = parseAiResponse(data, model);
+
+                const explanationString = `<strong>Introduction:</strong> ${aiResponse.explanation.introduction}<br><br>` +
+                    `<strong>Correct Answer (${aiResponse.correctAnswer}):</strong> ${aiResponse.explanation.correctExplanation}<br><br>` +
+                    `<strong>Why other options are incorrect:</strong><br>` +
+                    `<ul>` +
+                    Object.keys(aiResponse.explanation.incorrectExplanations).map(key => {
+                        return `<li><strong>Option ${key}:</strong> ${aiResponse.explanation.incorrectExplanations[key]}</li>`;
+                    }).join('') +
+                    `</ul>`;
+
+                currentAiQuestion = {
+                    question: aiResponse.question,
+                    options: Object.values(aiResponse.options),
+                    correctAnswer: aiResponse.correctAnswer,
+                    explanation: explanationString,
+                    source: 'ai',
+                    examName: aiExamName,
+                    subject: aiSubject,
+                    topic: aiTopic,
+                    image: null
+                };
+                
+                displayAiQuestion(currentAiQuestion);
+                showToast('AI question generated successfully!', 'toast-ai');
+
+            } catch (error) {
+                console.error('Error generating AI question:', error);
+                showToast(`AI generation failed: ${error.message}`, 'toast-error');
+            } finally {
+                aiLoading.style.display = 'none';
+            }
+        }
+
+        function parseAiResponse(data, model) {
+            let content;
+            if (model.startsWith('gpt') || model.startsWith('deepseek')) {
+                content = data.choices[0].message.content;
+            } else if (model.startsWith('gemini')) {
+                content = data.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error('Unsupported model response format.');
+            }
+            return JSON.parse(content);
+        }
+
+        function regenerateQuestion() {
+            generateQuestion();
+        }
+
+        async function processAiFile() {
+            const fileInput = document.getElementById('ai-file');
+            const file = fileInput.files[0];
+            if (!file) {
+                showToast('Please select a file to process.', 'toast-error');
+                return;
+            }
+
+            showToast('Processing file...', 'toast-ai');
+            try {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    if (file.type.startsWith('image/')) {
+                        const base64Image = e.target.result;
+                        aiFileContent = `The user has provided an image. Use this image as context for the question. The image is encoded in Base64: ${base64Image}`;
+                    } else {
+                        const textContent = e.target.result;
+                        aiFileContent = `The user has provided the following text document for context: ${textContent}`;
+                    }
+                    showToast('File processed successfully!', 'toast-ai');
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                showToast('Failed to process file. Please try again.', 'toast-error');
+                console.error('File processing error:', error);
+            }
+        }
+
+        async function processAiUrl() {
+            const urlInput = document.getElementById('ai-url');
+            const url = urlInput.value.trim();
+            if (!url) {
+                showToast('Please enter a URL.', 'toast-error');
+                return;
+            }
+
+            showToast('Fetching and summarizing URL content...', 'toast-ai');
+            aiFileContent = `The user has provided the following URL for context: ${url}. The content of the page is relevant to the question generation.`;
+            showToast('URL processed successfully! Content will be used as context.', 'toast-ai');
+            urlInput.value = '';
+        }
+        
+        function displayAiQuestion(question) {
+            aiResult.style.display = 'block';
+            let htmlContent = `
+                <p><strong>Question:</strong> ${question.question}</p>
+                <p><strong>Options:</strong></p>
+                <ul>
+                    ${question.options.map((opt, index) => `<li>${String.fromCharCode(65 + index)}. ${opt}</li>`).join('')}
+                </ul>
+                <p><strong>Correct Answer:</strong> ${question.correctAnswer}</p>
+                <p><strong>Explanation:</strong><br>${question.explanation}</p>
+            `;
+            aiQuestionText.innerHTML = htmlContent;
+        }
+
+        function useAiQuestion() {
+            if (!currentAiQuestion) {
+                showToast('No AI question to save.', 'toast-error');
+                return;
+            }
+
+            const now = new Date().toLocaleString();
+            const newQuestion = {
+                id: Date.now(),
+                examName: currentAiQuestion.examName,
+                subject: currentAiQuestion.subject,
+                topic: currentAiQuestion.topic,
+                question: currentAiQuestion.question,
+                options: currentAiQuestion.options,
+                correctAnswer: currentAiQuestion.correctAnswer,
+                explanation: currentAiQuestion.explanation,
+                source: 'ai',
+                image: null,
+                createdAt: now,
+                updatedAt: now
+            };
+
+            questionBank.unshift(newQuestion);
+            saveQuestionBank();
+            renderQuestions();
+            updateStats();
+
+            aiResult.style.display = 'none';
+            document.getElementById('ai-topic').value = '';
+            currentAiQuestion = null;
+            aiFileContent = null;
+            document.getElementById('ai-context').value = '';
+            document.getElementById('ai-file').value = '';
+            showToast('AI question saved to question bank!', 'toast');
+        }
+
+        // --- Initialization ---
+        // Initialize the app on page load
+        initApp();
+    </script>
+</body>
+</html>

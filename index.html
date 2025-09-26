@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Question Bank Generator - Create & Manage Medical Exam Questions</title>
+    <meta name="description" content="A comprehensive web application for creating, managing, and exporting medical question banks with AI-powered features. Perfect for medical students, educators, and professionals.">
+    <meta name="keywords" content="medical questions, question bank, medical exam, AI questions, medical education, USMLE, medical study">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://qbgenerator.aimedipedia.com/">
+    <meta property="og:title" content="Medical Question Bank Generator">
+    <meta property="og:description" content="Create, manage, and export comprehensive medical question banks with AI-powered assistance. Perfect for medical education and exam preparation.">
+    <meta property="og:image" content="https://qbgenerator.aimedipedia.com/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://qbgenerator.aimedipedia.com/">
+    <meta property="twitter:title" content="Medical Question Bank Generator">
+    <meta property="twitter:description" content="Create, manage, and export comprehensive medical question banks with AI-powered assistance.">
+    <meta property="twitter:image" content="https://qbgenerator.aimedipedia.com/og-image.jpg">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://qbgenerator.aimedipedia.com/">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/png" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9e0.png">
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f9e0.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c6fbb;
+            --primary-dark: #1a5ca1;
+            --secondary: #e8f1f9;
+            --accent: #ff6b6b;
+            --success: #28a745;
+            --warning: #ffc107;
+            --text: #333;
+            --light-text: #666;
+            --border: #ddd;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
+            --ai-primary: #8e44ad;
+            --ai-secondary: #f4e6fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+        
+        /* Header Styles */
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>') center/cover;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 2rem;
+            animation: slideUp 1s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero .subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        .features-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .feature-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .feature-card p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 5rem 2rem;
+            background: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            font-size: 1.2rem;
+            color: var(--light-text);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-item {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-icon i {
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .feature-item h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        
+        .feature-item p {
+            color: var(--light-text);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 0.3rem 0;
+            color: var(--light-text);
+        }
+        
+        .feature-list li i {
+            color: var(--success);
+            margin-right: 0.5rem;
+        }
+        
+        /* How to Use Section */
+        .how-to-use {
+            padding: 5rem 2rem;
+            background: white;
+        }
+        
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .step-item {
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 1.5rem auto;
+        }
+        
+        .step-item h3 {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        
+        .step-item p {
+            color: var(--light-text);
+        }
+        
+        /* AI Features Section */
+        .ai-features {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, var(--ai-primary), #9b59b6);
+            color: white;
+        }
+        
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .ai-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .ai-card h3 {
+            margin-bottom: 1rem;
+        }
+        
+        .ai-card p {
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .provider-logos {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .provider-logo {
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        /* CTA Section */
+        .cta {
+            padding: 5rem 2rem;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #333;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .footer p {
+            opacity: 0.8;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .features-grid,
+            .steps-grid,
+            .ai-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .cta h2 {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 1s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Scroll animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+        
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1><i class="fas fa-stethoscope"></i> Medical Question Bank Generator</h1>
+            <p class="subtitle">Create, manage, and export comprehensive medical question banks with AI-powered assistance</p>
+            
+            <div class="hero-buttons">
+                <a href="auth.html" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Login / Sign Up
+                </a>
+                <a href="qBankdbGenerator.html" class="btn btn-secondary">
+                    <i class="fas fa-user-clock"></i> Continue as Guest
+                </a>
+            </div>
+            
+            <div class="features-preview">
+                <div class="feature-card">
+                    <i class="fas fa-edit"></i>
+                    <h3>Rich Editor</h3>
+                    <p>Create questions with text formatting and images</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-robot"></i>
+                    <h3>AI-Powered</h3>
+                    <p>Generate questions with OpenAI, Gemini & DeepSeek</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-download"></i>
+                    <h3>Export Ready</h3>
+                    <p>Download as Excel, CSV, or PDF formats</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Mobile Ready</h3>
+                    <p>Works perfectly on all devices</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-title animate-on-scroll">
+                <h2>Comprehensive Features for Medical Education</h2>
+                <p>Everything you need to create, manage, and share medical question banks</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-item animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <h3>Question Creation & Management</h3>
+                    <p>Create comprehensive medical questions with our intuitive interface</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Rich text editor with formatting</li>
+                        <li><i class="fas fa-check"></i> Image upload and insertion</li>
+                        <li><i class="fas fa-check"></i> Multiple choice options (A-G)</li>
+                        <li><i class="fas fa-check"></i> Detailed explanations</li>
+                        <li><i class="fas fa-check"></i> Edit and delete existing questions</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-item animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-import"></i>
+                    </div>
+                    <h3>Import & Export</h3>
+                    <p>Seamlessly transfer question banks between different formats</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Import from Excel/CSV files</li>
+                        <li><i class="fas fa-check"></i> Export to Excel format</li>
+                        <li><i class="fas fa-check"></i> Generate PDF documents</li>
+                        <li><i class="fas fa-check"></i> Sample templates provided</li>
+                        <li><i class="fas fa-check"></i> Bulk question processing</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-item animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                    <h3>Organization & Filtering</h3>
+                    <p>Keep your questions organized with smart categorization</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Filter by exam type</li>
+                        <li><i class="fas fa-check"></i> Organize by subject</li>
+                        <li><i class="fas fa-check"></i> Sort by topic</li>
+                        <li><i class="fas fa-check"></i> Search functionality</li>
+                        <li><i class="fas fa-check"></i> Source tracking</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-item animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3>Local Storage & Privacy</h3>
+                    <p>Your data stays secure and private in your browser</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> All data stored locally</li>
+                        <li><i class="fas fa-check"></i> No server required</li>
+                        <li><i class="fas fa-check"></i> Works offline</li>
+                        <li><i class="fas fa-check"></i> Data persists between sessions</li>
+                        <li><i class="fas fa-check"></i> Complete privacy control</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-item animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Responsive Design</h3>
+                    <p>Access your question bank from any device, anywhere</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Mobile-optimized interface</li>
+                        <li><i class="fas fa-check"></i> Tablet compatibility</li>
+                        <li><i class="fas fa-check"></i> Cross-browser support</li>
+                        <li><i class="fas fa-check"></i> Touch-friendly controls</li>
+                        <li><i class="fas fa-check"></i> Adaptive layouts</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-item animate-on-scroll">
+                    <div class="feature-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Medical Education Focused</h3>
+                    <p>Designed specifically for medical professionals and students</p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> USMLE question format</li>
+                        <li><i class="fas fa-check"></i> Medical terminology support</li>
+                        <li><i class="fas fa-check"></i> Clinical case scenarios</li>
+                        <li><i class="fas fa-check"></i> Exam preparation tools</li>
+                        <li><i class="fas fa-check"></i> Educational best practices</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Features Section -->
+    <section class="ai-features">
+        <div class="container">
+            <div class="section-title animate-on-scroll">
+                <h2 style="color: white;"><i class="fas fa-robot"></i> AI-Powered Question Generation</h2>
+                <p style="color: rgba(255,255,255,0.9);">Harness the power of artificial intelligence to create high-quality medical questions</p>
+            </div>
+            
+            <div class="ai-grid">
+                <div class="ai-card animate-on-scroll">
+                    <h3><i class="fas fa-brain"></i> Smart Question Generation</h3>
+                    <p>Generate contextual medical questions from topics, clinical scenarios, or uploaded content using advanced AI models.</p>
+                    <div class="provider-logos">
+                        <span class="provider-logo">OpenAI GPT</span>
+                        <span class="provider-logo">Google Gemini</span>
+                        <span class="provider-logo">DeepSeek</span>
+                    </div>
+                </div>
+                
+                <div class="ai-card animate-on-scroll">
+                    <h3><i class="fas fa-lightbulb"></i> Intelligent Explanations</h3>
+                    <p>Automatically generate detailed explanations for questions, helping students understand the reasoning behind correct answers.</p>
+                </div>
+                
+                <div class="ai-card animate-on-scroll">
+                    <h3><i class="fas fa-file-upload"></i> Context-Aware Generation</h3>
+                    <p>Upload medical documents, case studies, or textbook excerpts to generate targeted questions based on specific content.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Use Section -->
+    <section class="how-to-use">
+        <div class="container">
+            <div class="section-title animate-on-scroll">
+                <h2>How to Get Started</h2>
+                <p>Follow these simple steps to start creating your medical question bank</p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-item animate-on-scroll">
+                    <div class="step-number">1</div>
+                    <h3>Create Your First Question</h3>
+                    <p>Use our rich text editor to create questions with formatting, images, and multiple choice options. Add detailed explanations to help students learn.</p>
+                </div>
+                
+                <div class="step-item animate-on-scroll">
+                    <div class="step-number">2</div>
+                    <h3>Organize by Categories</h3>
+                    <p>Categorize questions by exam type (USMLE, COMLEX), subject (Cardiology, Neurology), and topics for easy organization and retrieval.</p>
+                </div>
+                
+                <div class="step-item animate-on-scroll">
+                    <div class="step-number">3</div>
+                    <h3>Use AI Generation (Optional)</h3>
+                    <p>Set up AI integration with your API key to generate questions from topics or content. Choose from OpenAI, Google Gemini, or DeepSeek models.</p>
+                </div>
+                
+                <div class="step-item animate-on-scroll">
+                    <div class="step-number">4</div>
+                    <h3>Import Existing Questions</h3>
+                    <p>Import questions from Excel or CSV files using our template format. Perfect for migrating existing question banks or bulk uploads.</p>
+                </div>
+                
+                <div class="step-item animate-on-scroll">
+                    <div class="step-number">5</div>
+                    <h3>Export and Share</h3>
+                    <p>Export your question bank as Excel files for sharing with colleagues or as PDF documents for printing and offline study.</p>
+                </div>
+                
+                <div class="step-item animate-on-scroll">
+                    <div class="step-number">6</div>
+                    <h3>Manage and Update</h3>
+                    <p>Easily edit, delete, or update questions as needed. All changes are automatically saved in your browser for future sessions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta">
+        <div class="container animate-on-scroll">
+            <h2>Ready to Start Building Your Question Bank?</h2>
+            <p>Join medical educators worldwide who trust our platform for creating comprehensive question banks</p>
+            <a href="auth.html" class="btn btn-primary" style="background: white; color: var(--primary); font-size: 1.2rem; padding: 1.2rem 2.5rem;">
+                <i class="fas fa-rocket"></i> Get Started Now
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Medical Question Bank Generator. Built with ❤️ for medical education.</p>
+            <p style="margin-top: 0.5rem; opacity: 0.6;">Open source • No data collection • Works offline</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Add loading animation
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '1';
+        });
+    </script>
+</body>
+</html>

@@ -15,7 +15,7 @@ This guide will help you set up Firebase Authentication for your Medical Questio
 ### 1. Create Firebase Project
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Click **"Create a project"**
-3. Enter project name: `qbank-generator-medical` (or your choice)
+3. Enter project name: `qbank-generator` (or your choice)
 4. Disable Google Analytics (optional)
 5. Click **"Create project"**
 
@@ -35,17 +35,45 @@ This guide will help you set up Firebase Authentication for your Medical Questio
 4. Register app name: `qbank-generator`
 5. **Copy the config object** - you'll need this!
 
+npm install firebase
+
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyALM6LTcqUE7AXlyNmNPQSfW0Sxf2b9QB4",
+  authDomain: "qbank-generator.firebaseapp.com",
+  projectId: "qbank-generator",
+  storageBucket: "qbank-generator.firebasestorage.app",
+  messagingSenderId: "564130040089",
+  appId: "1:564130040089:web:911850125c2be5af9d5d88"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+
+
+
+
+
+
 Example config:
 ```javascript
 const firebaseConfig = {
   apiKey: "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
+  authDomain: "qbank-generator.firebaseapp.com",
+  projectId: "qbank-generator",
+  storageBucket: "qbank-generator.appspot.com",
   messagingSenderId: "123456789012",
   appId: "1:123456789012:web:abcdefghijklmnop"
 };
 ```
+
+
 
 ### 4. Configure GitHub OAuth (Optional)
 **📘 Detailed Guide:** See `GITHUB_OAUTH_SETUP.md` for complete step-by-step instructions.
@@ -56,7 +84,7 @@ const firebaseConfig = {
 3. Fill in:
    - **Application name**: `QBank Generator - Medical Question Bank`
    - **Homepage URL**: `https://qbgenerator.aimedipedia.com`
-   - **Authorization callback URL**: `https://your-firebase-project.firebaseapp.com/__/auth/handler`
+   - **Authorization callback URL**: `https://qbank-generator.firebaseapp.com/__/auth/handler`
 4. Copy **Client ID** and **Client Secret**
 5. Add them to Firebase GitHub provider settings
 

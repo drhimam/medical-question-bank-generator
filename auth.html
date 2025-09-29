@@ -340,10 +340,146 @@
             background: var(--accent);
         }
         
+        /* Enhanced Auth Footer */
+        .auth-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .auth-links a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        
+        .auth-links a:hover {
+            background: var(--secondary);
+            text-decoration: none;
+        }
+        
+        /* Main Footer */
+        .main-footer {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 2rem 0 1rem;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .main-footer .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .main-footer .footer-section h4 {
+            color: #ecf0f1;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .main-footer .footer-brand h3 {
+            color: #3498db;
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+        
+        .main-footer .footer-brand p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        .main-footer .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .main-footer .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .main-footer .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .main-footer .footer-links a:hover {
+            color: #3498db;
+        }
+        
+        .main-footer .footer-links span {
+            color: #95a5a6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .main-footer .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .main-footer .footer-info p {
+            margin: 0;
+            opacity: 0.8;
+        }
+        
+        .main-footer .footer-subtitle {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        
+        .main-footer .footer-domain {
+            font-family: 'Courier New', monospace;
+            color: #3498db;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
         @media (max-width: 768px) {
             .auth-container {
                 margin: 1rem;
                 padding: 2rem;
+            }
+            
+            .auth-links {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .main-footer .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+            
+            .main-footer .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
             }
         }
     </style>
@@ -428,12 +564,56 @@
         </div>
         
         <div class="auth-footer">
-            <p>
-                <a href="index.html">← Back to Home</a> | 
-                <a href="#" id="guestMode">Continue as Guest</a>
-            </p>
+            <div class="auth-links">
+                <a href="index.html"><i class="fas fa-home"></i> Home</a>
+                <a href="#" id="guestMode"><i class="fas fa-user-secret"></i> Guest Mode</a>
+                <a href="qBankdbGenerator.html"><i class="fas fa-brain"></i> Main App</a>
+            </div>
         </div>
     </div>
+    
+    <!-- Enhanced Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <h3><i class="fas fa-brain"></i> QBank Generator</h3>
+                        <p>Secure Authentication Portal</p>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Authentication</h4>
+                    <ul class="footer-links">
+                        <li><span><i class="fas fa-shield-alt"></i> Firebase Security</span></li>
+                        <li><span><i class="fab fa-google"></i> Google OAuth</span></li>
+                        <li><span><i class="fab fa-github"></i> GitHub OAuth</span></li>
+                        <li><span><i class="fas fa-user-secret"></i> Guest Access</span></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html"><i class="fas fa-info-circle"></i> About</a></li>
+                        <li><a href="qBankdbGenerator.html"><i class="fas fa-brain"></i> Question Bank</a></li>
+                        <li><a href="https://qbgenerator.aimedipedia.com" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Live Site
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-info">
+                    <p>&copy; 2025 Medical Question Bank Generator by <strong>AI Medipedia</strong></p>
+                    <p class="footer-subtitle">Secure • Private • Professional</p>
+                </div>
+                <div class="footer-domain">qbgenerator.aimedipedia.com</div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -444,12 +624,12 @@
         // Firebase configuration (You'll need to replace with your config)
         const firebaseConfig = {
             // Add your Firebase config here
-            apiKey: "AIzaSyALM6LTcqUE7AXlyNmNPQSfW0Sxf2b9QB4",
-            authDomain: "qbank-generator.firebaseapp.com",
-            projectId: "qbank-generator",
-            storageBucket: "qbank-generator.firebasestorage.app",
-            messagingSenderId: "564130040089",
-            appId: "1:564130040089:web:911850125c2be5af9d5d88"
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
         };
 
         // Initialize Firebase
@@ -719,5 +899,4 @@
         }
     </script>
 </body>
-
 </html>

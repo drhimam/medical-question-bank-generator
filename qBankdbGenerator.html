@@ -27,6 +27,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
             --primary: #2c6fbb;
@@ -63,9 +65,56 @@
         header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 1.5rem 0;
+            padding: 0.5rem 0 1.5rem 0;
             box-shadow: var(--shadow);
             margin-bottom: 2rem;
+        }
+        
+        /* Navigation Styles */
+        .main-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .nav-brand .brand-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-brand .brand-link:hover {
+            color: #ecf0f1;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
         
         header h1 {
@@ -222,6 +271,80 @@
             background: #e4e4e4;
         }
         
+        .btn-update {
+            background: linear-gradient(135deg, #ff9800, #f57c00) !important;
+            border: none !important;
+            color: white !important;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 152, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+        }
+        
+        #cancel-edit-btn {
+            margin-left: 10px;
+            background: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        #cancel-edit-btn:hover {
+            background: #5a6268;
+            border-color: #545b62;
+        }
+        
+        /* Highlight editing form */
+        .form-editing {
+            border: 3px solid #ff9800;
+            border-radius: 10px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff3e0, #ffecb3);
+            position: relative;
+            margin: 20px 0;
+            animation: highlightPulse 3s infinite;
+        }
+        
+        @keyframes highlightPulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 20px 5px rgba(255, 152, 0, 0.3);
+                transform: scale(1.01);
+            }
+        }
+        
+        .form-editing::before {
+            content: "✏️ EDITING MODE - SCROLL UP IF NEEDED";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff9800;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 1000;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-3px);
+            }
+        }
+        
         .btn-danger {
             background: var(--accent);
             color: white;
@@ -243,10 +366,57 @@
         .btn-export {
             background: #28a745;
             color: white;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
         
         .btn-export:hover {
             background: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-export i {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Specific export button colors */
+        .btn-export[onclick*="exportToExcel"] {
+            background: #107c41;
+        }
+        
+        .btn-export[onclick*="exportToExcel"]:hover {
+            background: #0e6b37;
+            box-shadow: 0 4px 12px rgba(16, 124, 65, 0.3);
+        }
+
+        .btn-export[onclick*="exportToPDF"] {
+            background: #dc3545;
+        }
+        
+        .btn-export[onclick*="exportToPDF"]:hover {
+            background: #c82333;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-export[onclick*="exportToWord"] {
+            background: #2b579a;
+        }
+        
+        .btn-export[onclick*="exportToWord"]:hover {
+            background: #1e3f73;
+            box-shadow: 0 4px 12px rgba(43, 87, 154, 0.3);
+        }
+
+        .btn-export[onclick*="exportToJSON"] {
+            background: #6610f2;
+        }
+        
+        .btn-export[onclick*="exportToJSON"]:hover {
+            background: #520dc2;
+            box-shadow: 0 4px 12px rgba(102, 16, 242, 0.3);
         }
         
         .actions {
@@ -260,35 +430,8 @@
             overflow-y: auto;
         }
         
-        .question-item {
-            padding: 15px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .question-item:hover {
-            background: var(--secondary);
-        }
-        
-        .question-item.selected {
-            background: #e3eef9;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .question-text {
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        
-        .question-meta {
-            display: flex;
-            gap: 10px;
-            font-size: 0.85rem;
-            color: var(--light-text);
-            flex-wrap: wrap;
-        }
-        
+        /* Legacy styles removed - replaced with collapsible question styles */
+
         .badge {
             display: inline-block;
             padding: 3px 8px;
@@ -307,17 +450,307 @@
             color: #2e7d32;
         }
         
+        .badge-topic {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
         .badge-ai {
             background: var(--ai-secondary);
             color: var(--ai-primary);
         }
 
-        .dates-meta {
-            display: flex;
-            gap: 15px;
+        .dates-meta-inline {
             font-size: 0.75rem;
             color: var(--light-text);
-            margin-top: 5px;
+        }
+        
+
+        /* Collapsible Question Styles */
+        .question-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+            overflow: hidden;
+        }
+
+        .question-header {
+            padding: 15px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .question-header:hover {
+            background: var(--secondary);
+        }
+
+        .question-header.expanded {
+            background: #e3eef9;
+        }
+
+        .question-summary {
+            flex: 1;
+        }
+
+        .question-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .question-preview {
+            font-size: 0.9rem;
+            color: var(--light-text);
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .question-expand-icon {
+            font-size: 1.2rem;
+            color: var(--primary);
+            transition: transform 0.3s ease;
+            margin-left: 15px;
+        }
+
+        .question-expand-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .question-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .question-details.expanded {
+            max-height: 1000px;
+        }
+
+        .question-content {
+            padding: 20px;
+        }
+
+        .question-full-text {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
+        .question-options {
+            margin: 15px 0;
+        }
+
+        .question-option {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 6px;
+            background: #f8f9fa;
+            border-left: 3px solid transparent;
+        }
+
+        .question-option.correct {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+            font-weight: 500;
+        }
+
+        .question-explanation {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #ffc107;
+            margin-top: 15px;
+        }
+
+        .question-explanation strong {
+            color: #856404;
+        }
+
+        /* Discussion Area Styles */
+        .question-discussion {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--ai-primary);
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .question-discussion strong {
+            color: var(--ai-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .discussion-content {
+            color: #333;
+            line-height: 1.7;
+        }
+
+        .discussion-content h3,
+        .discussion-content h4,
+        .discussion-content h5 {
+            color: var(--ai-primary);
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .discussion-content ul,
+        .discussion-content ol {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .discussion-content li {
+            margin-bottom: 0.25rem;
+        }
+
+        .discussion-content p {
+            margin-bottom: 0.75rem;
+        }
+
+        .generate-discussion-btn {
+            background: linear-gradient(135deg, var(--ai-primary), #9b59b6);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .generate-discussion-btn:hover {
+            background: linear-gradient(135deg, #9b59b6, var(--ai-primary));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
+        }
+
+        .generate-discussion-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .discussion-loading {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--ai-primary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .discussion-loading.show {
+            display: flex;
+        }
+
+        .discussion-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e0e0e0;
+            border-top: 2px solid var(--ai-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* AI Discussion Result Styles */
+        .ai-discussion-result {
+            background: linear-gradient(135deg, #f8f9ff, #fff0f8);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--ai-primary);
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .ai-discussion-result h4 {
+            color: var(--ai-primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .ai-discussion-result .discussion-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Creator/Username Styles */
+        .question-creator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--light-text);
+            margin-top: 8px;
+        }
+
+        .creator-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .creator-name {
+            font-weight: 500;
+        }
+
+        .creator-ai {
+            color: var(--ai-primary);
+        }
+
+        .creator-ai .creator-avatar {
+            background: var(--ai-primary);
+        }
+
+        .question-actions {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
         }
         
         .search-box {
@@ -507,12 +940,267 @@
             flex-wrap: wrap;
         }
         
+        /* AI API Notice */
+        .ai-api-notice {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #856404;
+            line-height: 1.4;
+        }
+        
+        .ai-api-notice i.fas.fa-info-circle {
+            color: #ffc107;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        
+        .ai-api-notice i.fas.fa-cog {
+            color: #856404;
+            background: rgba(133, 100, 4, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+        
+        /* AI Button Group & Hint */
+        .ai-button-group {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .ai-api-hint {
+            color: #6c757d;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-style: italic;
+        }
+        
+        .ai-api-hint i.fas.fa-cog {
+            color: #6c757d;
+            font-size: 0.7rem;
+        }
+        
+        /* Storage Warning */
+        .storage-warning {
+            background: linear-gradient(135deg, #fff5f5, #fed7d7);
+            border: 2px solid #fc8181;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            color: #742a2a;
+            box-shadow: 0 2px 8px rgba(252, 129, 129, 0.2);
+        }
+        
+        .storage-warning i.fas.fa-exclamation-triangle {
+            color: #e53e3e;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .warning-content {
+            flex: 1;
+        }
+        
+        .warning-content strong {
+            display: block;
+            color: #c53030;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        
+        .warning-content p {
+            margin: 8px 0;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+        
+        .warning-content ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        
+        .warning-content li {
+            margin: 4px 0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
         /* Export buttons */
         .export-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin: 20px 0;
             flex-wrap: wrap;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .export-actions::before {
+            content: "📤";
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+            align-self: center;
+        }
+
+        /* Dropdown Export/Import Styles */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: linear-gradient(135deg, #2c6fbb, #1a5ca1);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-btn:hover {
+            background: linear-gradient(135deg, #1a5ca1, #2c6fbb);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(44, 111, 187, 0.3);
+        }
+
+        .dropdown-btn i.fa-chevron-down {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-btn.active i.fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border: 1px solid #e0e0e0;
+            min-width: 200px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 20px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+            color: #2c6fbb;
+        }
+
+        .dropdown-item i {
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Export dropdown items - specific colors */
+        .dropdown-item.export-excel:hover {
+            background: #e8f5e9;
+            color: #107c41;
+        }
+
+        .dropdown-item.export-pdf:hover {
+            background: #ffeaea;
+            color: #dc3545;
+        }
+
+        .dropdown-item.export-markdown:hover {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .dropdown-item.export-json:hover {
+            background: #f3e5f5;
+            color: #6610f2;
+        }
+
+        /* Import dropdown button */
+        .dropdown-btn.import-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .dropdown-btn.import-btn:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .dropdown-item.import-json:hover {
+            background: #f3e5f5;
+            color: #6610f2;
+        }
+
+        .dropdown-item.import-excel:hover {
+            background: #e8f5e9;
+            color: #107c41;
+        }
+
+        .dropdown-item.sample-download:hover {
+            background: #fff3cd;
+            color: #856404;
         }
         
         /* Select2 customization */
@@ -587,17 +1275,233 @@
         
         /* User Profile Styles */
         .user-profile {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-icon-container {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .user-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: white;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .user-icon:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .user-icon.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            min-width: 280px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .profile-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+        
+        .profile-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto 1rem auto;
+            border: 3px solid #f8f9fa;
+        }
+        
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+        
+        .profile-email {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        
+        .profile-actions {
+            padding: 1rem;
+        }
+        
+        .profile-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-btn:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+        }
+        
+        .profile-btn.logout {
+            color: var(--accent);
+            border-top: 1px solid #f0f0f0;
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+        }
+        
+        .profile-btn.logout:hover {
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        /* Profile Modal */
+        .profile-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .profile-modal.show {
+            display: flex;
+        }
+        
+        .profile-modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+            padding: 0.25rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            background: #f0f0f0;
+            color: var(--text);
+        }
+        
+        /* Profile Modal Info Styles */
+        .profile-info-section {
+            margin-top: 1rem;
+        }
+        
+        .info-row {
             display: flex;
             align-items: center;
             gap: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.75rem 1rem;
-            border-radius: 25px;
-            transition: all 0.3s ease;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f5f5f5;
         }
         
-        .user-profile:hover {
-            background: rgba(255, 255, 255, 0.15);
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-row i {
+            width: 20px;
+            color: var(--primary);
+        }
+        
+        .info-row div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-row strong {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-row span {
+            font-size: 0.85rem;
+            color: var(--light-text);
         }
         
         .user-avatar {
@@ -690,6 +1594,18 @@
                 font-size: 1.2rem;
             }
             
+            .main-nav {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+            
             .stats {
                 flex-direction: column;
                 gap: 10px;
@@ -718,6 +1634,22 @@
             
             .export-actions {
                 flex-direction: column;
+                gap: 12px;
+            }
+
+            .dropdown-container {
+                width: 100%;
+            }
+
+            .dropdown-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .dropdown-menu {
+                width: 100%;
+                left: 0;
+                right: 0;
             }
 
             .btn, input, select, textarea {
@@ -732,11 +1664,215 @@
                 font-size: 1.1rem;
             }
         }
+        
+        /* Footer Styles */
+        .app-footer {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 2rem 0 1rem;
+            margin-top: 4rem;
+            border-top: 3px solid var(--primary);
+        }
+        
+        .app-footer .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .app-footer .footer-section h4 {
+            color: #ecf0f1;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .app-footer .footer-brand h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+        
+        .app-footer .footer-brand p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        .app-footer .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .app-footer .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .app-footer .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .app-footer .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .app-footer .footer-links span {
+            color: #95a5a6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .app-footer .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .app-footer .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .app-footer .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .app-footer .footer-domain {
+            font-family: 'Courier New', monospace;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .app-footer .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .app-footer .footer-info p {
+            margin: 0;
+            opacity: 0.8;
+        }
+        
+        .app-footer .footer-subtitle {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+        
+        .app-footer .footer-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .app-footer .footer-badges .badge {
+            background: rgba(44, 111, 187, 0.2);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            border: 1px solid rgba(44, 111, 187, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .app-footer .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 2rem;
+            }
+            
+            .app-footer .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .app-footer .social-links {
+                justify-content: center;
+            }
+            
+            .storage-warning {
+                flex-direction: column;
+                text-align: center;
+                padding: 12px 16px;
+            }
+            
+            .storage-warning i.fas.fa-exclamation-triangle {
+                align-self: center;
+                margin-bottom: 8px;
+            }
+            
+            /* Mobile user profile styles */
+            .profile-dropdown {
+                right: -10px;
+                min-width: 260px;
+            }
+            
+            .profile-modal-content {
+                margin: 1rem;
+                max-width: none;
+                width: calc(100% - 2rem);
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .user-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
+            <!-- Navigation Bar -->
+            <nav class="main-nav">
+                <div class="nav-brand">
+                    <a href="index.html" class="brand-link">
+                        <i class="fas fa-brain"></i> QBank Generator
+                    </a>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <a href="auth.html" class="nav-link">
+                        <i class="fas fa-sign-in-alt"></i> Auth
+                    </a>
+                    <a href="#question-form" class="nav-link">
+                        <i class="fas fa-plus"></i> Add Question
+                    </a>
+                    <a href="#questions-list" class="nav-link">
+                        <i class="fas fa-list"></i> Questions
+                    </a>
+                </div>
+            </nav>
+            
             <div class="header-content">
                 <div>
                     <h1>📊 Medical Question Bank Generator</h1>
@@ -758,15 +1894,27 @@
                 
                 <!-- User Profile Section -->
                 <div id="userProfileSection" class="user-profile" style="display: none;">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div class="user-info">
-                        <div class="user-name" id="userName">User Name</div>
-                        <div class="user-email" id="userEmail">user@example.com</div>
-                    </div>
-                    <div class="user-actions">
-                        <button class="user-btn" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </button>
+                    <div class="user-icon-container">
+                        <div class="user-icon" id="userIcon">
+                            <span id="userInitials">U</span>
+                        </div>
+                        
+                        <!-- Profile Dropdown -->
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="profile-header">
+                                <div class="profile-avatar" id="profileAvatar">U</div>
+                                <div class="profile-name" id="profileName">User Name</div>
+                                <div class="profile-email" id="profileEmail">user@example.com</div>
+                            </div>
+                            <div class="profile-actions">
+                                <button class="profile-btn" id="viewProfileBtn">
+                                    <i class="fas fa-user"></i> View Profile
+                                </button>
+                                <button class="profile-btn logout" id="logoutBtn">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -788,12 +1936,73 @@
             </div>
         </div>
     </header>
+
+    <!-- Profile Modal -->
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-modal-content">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="profile-header">
+                <div class="profile-avatar" id="modalAvatar">U</div>
+                <div class="profile-name" id="modalName">User Name</div>
+                <div class="profile-email" id="modalEmail">user@example.com</div>
+            </div>
+            
+            <div class="profile-actions">
+                <div class="profile-info-section">
+                    <h3 style="margin-bottom: 1rem; color: var(--text);">Profile Information</h3>
+                    
+                    <div class="info-row">
+                        <i class="fas fa-user"></i>
+                        <div>
+                            <strong>Display Name</strong>
+                            <span id="modalDisplayName">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <strong>Email</strong>
+                            <span id="modalUserEmail">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <strong>Member Since</strong>
+                            <span id="modalJoinDate">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <div>
+                            <strong>Login Method</strong>
+                            <span id="modalProvider">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <i class="fas fa-question-circle"></i>
+                        <div>
+                            <strong>Questions Created</strong>
+                            <span id="modalQuestionsCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <div class="container">
         <div class="main-content">
             <div class="left-panel">
                 <div class="card">
-                    <h2 class="card-title">Add New Question</h2>
+                    <h2 class="card-title">Add New Question (Manual)</h2>
                     <form id="question-form">
                         <div class="form-group">
                             <label for="exam-name">Exam Name</label>
@@ -870,7 +2079,37 @@
                                 <button type="button" onclick="insertImage()"><i class="fas fa-image"></i> Image</button>
                             </div>
                             <div id="explanation" class="rich-text-editor" contenteditable="true"></div>
-                            <button type="button" class="btn btn-ai" id="generate-explanation-btn" style="margin-top:10px;">Generate AI Explanation</button>
+                            <div class="ai-button-group">
+                                <button type="button" class="btn btn-ai" id="generate-explanation-btn">Generate AI Explanation</button>
+                                <small class="ai-api-hint">
+                                    <i class="fas fa-cog"></i> API required - click settings icon above
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="discussion">Discussion</label>
+                            <div class="rich-text-toolbar">
+                                <button type="button" onclick="formatDiscussion('bold')"><strong>B</strong></button>
+                                <button type="button" onclick="formatDiscussion('italic')"><em>I</em></button>
+                                <button type="button" onclick="formatDiscussion('underline')"><u>U</u></button>
+                                <button type="button" onclick="formatDiscussion('insertUnorderedList')">• List</button>
+                                <button type="button" onclick="formatDiscussion('insertOrderedList')">1. List</button>
+                                <button type="button" onclick="insertDiscussionImage()"><i class="fas fa-image"></i> Image</button>
+                            </div>
+                            <div id="discussion" class="rich-text-editor" contenteditable="true" placeholder="Enter detailed discussion about the topic..."></div>
+                            <div class="ai-button-group">
+                                <button type="button" class="generate-discussion-btn" id="generate-discussion-btn">
+                                    <i class="fas fa-brain"></i> Generate AI Discussion
+                                </button>
+                                <div class="discussion-loading" id="discussion-loading">
+                                    <div class="discussion-spinner"></div>
+                                    <span>Generating discussion...</span>
+                                </div>
+                                <small class="ai-api-hint">
+                                    <i class="fas fa-cog"></i> API required - click settings icon above
+                                </small>
+                            </div>
                         </div>
                         
                         <div class="actions">
@@ -887,6 +2126,11 @@
                         AI Question Generation <i class="fas fa-robot"></i>
                         <i class="fas fa-cog settings-icon" onclick="toggleAiSettings()"></i>
                     </h2>
+                    
+                    <div class="ai-api-notice">
+                        <i class="fas fa-info-circle"></i>
+                        <span>To use AI generation, you need to configure your own API key. Click the <i class="fas fa-cog"></i> settings icon above to set up your API.</span>
+                    </div>
                     
                     <div class="form-group">
                         <label for="ai-exam-name">Exam Name</label>
@@ -958,12 +2202,41 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <div class="ai-discussion-result" id="ai-discussion-result" style="display: none;">
+                        <h4><i class="fas fa-comments"></i> AI-Generated Discussion</h4>
+                        <div id="ai-discussion-text" class="discussion-content"></div>
+                        <div class="ai-result-actions">
+                            <button class="btn btn-ai" onclick="useAiDiscussion()">
+                                <i class="fas fa-save"></i> Use This Discussion
+                            </button>
+                            <button class="btn btn-secondary" onclick="regenerateAiDiscussion()">
+                                <i class="fas fa-redo"></i> Regenerate Discussion
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div class="right-panel">
                 <div class="card">
                     <h2 class="card-title">Question Bank</h2>
+                    
+                    <div class="storage-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="warning-content">
+                            <strong>⚠️ Important: Data Storage Notice</strong>
+                            <p>Your questions are stored locally in your browser only. <strong>They are NOT stored in the cloud.</strong> 
+                            You may lose your questions when:</p>
+                            <ul>
+                                <li>Clearing browser cache/cookies</li>
+                                <li>Using incognito/private browsing mode</li>
+                                <li>Switching devices or browsers</li>
+                                <li>Browser updates or crashes</li>
+                            </ul>
+                            <p><strong>📥 Recommended:</strong> Export your questions regularly using the buttons below to prevent data loss!</p>
+                        </div>
+                    </div>
                     
                     <div class="search-box">
                         <input type="text" id="search-input" placeholder="Search questions...">
@@ -1007,24 +2280,59 @@
                     </div>
                     
                     <div class="export-actions">
-                        <button class="btn btn-export" onclick="exportToExcel()">
-                            <i class="fas fa-file-excel"></i> Export to Excel
-                        </button>
-                        <button class="btn btn-export" onclick="exportToPDF()">
-                            <i class="fas fa-file-pdf"></i> Export to PDF
-                        </button>
-                        <button class="btn btn-export" onclick="exportToJSON()">
-                            <i class="fas fa-file-code"></i> Export as JSON
-                        </button>
+                        <!-- Export Dropdown -->
+                        <div class="dropdown-container">
+                            <button class="dropdown-btn" id="exportDropdownBtn" onclick="toggleDropdown('exportDropdown')">
+                                <i class="fas fa-download"></i>
+                                Export Options
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="exportDropdown">
+                                <a href="#" class="dropdown-item export-excel" onclick="exportToExcel(); closeDropdown('exportDropdown')">
+                                    <i class="fas fa-file-excel"></i>
+                                    Export to Excel (.xlsx)
+                                </a>
+                                <a href="#" class="dropdown-item export-pdf" onclick="exportToPDF(); closeDropdown('exportDropdown')">
+                                    <i class="fas fa-file-pdf"></i>
+                                    Export to PDF (.pdf)
+                                </a>
+                                <a href="#" class="dropdown-item export-markdown" onclick="exportToMarkdown(); closeDropdown('exportDropdown')">
+                                    <i class="fas fa-file-alt"></i>
+                                    Export to Markdown (.md)
+                                </a>
+                                <a href="#" class="dropdown-item export-json" onclick="exportToJSON(); closeDropdown('exportDropdown')">
+                                    <i class="fas fa-file-code"></i>
+                                    Export as JSON (.json)
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Import Dropdown -->
+                        <div class="dropdown-container">
+                            <button class="dropdown-btn import-btn" id="importDropdownBtn" onclick="toggleDropdown('importDropdown')">
+                                <i class="fas fa-upload"></i>
+                                Import Options
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="importDropdown">
+                                <a href="#" class="dropdown-item import-json" onclick="document.getElementById('import-json-input').click(); closeDropdown('importDropdown')">
+                                    <i class="fas fa-file-code"></i>
+                                    Import JSON File
+                                </a>
+                                <a href="#" class="dropdown-item import-excel" onclick="document.getElementById('import-excel-input').click(); closeDropdown('importDropdown')">
+                                    <i class="fas fa-file-excel"></i>
+                                    Import Excel File
+                                </a>
+                                <a href="sample_import_questions.csv" download class="dropdown-item sample-download" onclick="closeDropdown('importDropdown')">
+                                    <i class="fas fa-download"></i>
+                                    Download Sample CSV
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Hidden file inputs -->
                         <input type="file" id="import-json-input" accept="application/json" style="display:none" />
-                        <button class="btn btn-import" onclick="document.getElementById('import-json-input').click()">
-                            <i class="fas fa-file-import"></i> Import JSON
-                        </button>
                         <input type="file" id="import-excel-input" accept=".xlsx,.xls" style="display:none" />
-                        <button class="btn btn-import" onclick="document.getElementById('import-excel-input').click()">
-                            <i class="fas fa-file-import"></i> Import from Excel
-                        </button>
-                        <a href="sample_import_questions.csv" download class="btn btn-link" style="margin-left:10px; color:#2c6fbb; text-decoration:underline;">Download Sample Excel/CSV</a>
                     </div>
                     
                     <div class="questions-list" id="questions-list">
@@ -1153,6 +2461,33 @@
             localStorage.setItem(storageKey, JSON.stringify(questionBank));
         }
 
+        // Get creator information for display
+        function getCreatorInfo(question) {
+            if (question.source === 'ai') {
+                return {
+                    name: 'AI Assistant',
+                    avatar: '🤖'
+                };
+            }
+            
+            // For manual questions, try to get user info
+            if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+                const user = firebase.auth().currentUser;
+                const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+                const avatar = displayName.charAt(0).toUpperCase();
+                return {
+                    name: displayName,
+                    avatar: avatar
+                };
+            }
+            
+            // Fallback for guest users or when Firebase is not available
+            return {
+                name: question.createdBy || 'Anonymous User',
+                avatar: (question.createdBy || 'U').charAt(0).toUpperCase()
+            };
+        }
+
         // Render the list of questions in the Question Bank
         function renderQuestions() {
             questionsList.innerHTML = '';
@@ -1178,57 +2513,126 @@
                 const questionItem = document.createElement('div');
                 questionItem.classList.add('question-item');
                 questionItem.setAttribute('data-id', q.id);
+                
+                // Get creator information
+                const creatorInfo = getCreatorInfo(q);
+                
+                // Create question preview (first 80 characters for more compact view)
+                const questionPreview = q.question.replace(/<[^>]*>/g, '').substring(0, 80) + '...';
+                
                 questionItem.innerHTML = `
-                    <div class="question-text">${index + 1}. ${q.question}</div>
-                    <div class="question-meta">
-                        <span class="badge badge-exam">${q.examName}</span>
-                        <span class="badge badge-category">${q.subject}</span>
-                        <span class="badge badge-topic">${q.topic}</span>
-                        ${q.source === 'ai' ? `<span class="badge badge-ai">AI Generated</span>` : ''}
+                    <div class="question-content" onclick="editQuestion('${q.id}')">
+                        <div class="question-summary">
+                            <div class="question-title">Q${index + 1}. ${questionPreview}</div>
+                            <div class="question-meta">
+                                <span class="badge badge-exam">${q.examName}</span>
+                                <span class="badge badge-category">${q.subject}</span>
+                                <span class="badge badge-topic">${q.topic}</span>
+                                ${q.source === 'ai' ? `<span class="badge badge-ai">AI Generated</span>` : ''}
+                            </div>
+                            <div class="question-creator ${q.source === 'ai' ? 'creator-ai' : ''}">
+                                <div class="creator-avatar">${creatorInfo.avatar}</div>
+                                <span class="creator-name">Created by ${creatorInfo.name}</span>
+                                <span class="dates-meta-inline">• ${q.createdAt || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="question-actions-inline">
+                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); editQuestion('${q.id}')" title="Edit Question">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="dates-meta">
-                        <span>Created: ${q.createdAt || 'N/A'}</span>
-                        <span>Updated: ${q.updatedAt || 'N/A'}</span>
-                    </div>
-                    <button class="btn btn-danger btn-delete-question" title="Delete" type="button"><i class="fas fa-trash"></i></button>
                 `;
-                questionItem.querySelector('.btn-delete-question').addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    deleteQuestion(q.id);
-                });
-                questionItem.addEventListener('click', (e) => {
-                    if (!e.target.classList.contains('btn-delete-question') && !e.target.closest('.btn-delete-question')) {
-                        editQuestion(q.id);
-                    }
-                });
+                
                 questionsList.appendChild(questionItem);
             });
         }
-        
+
+        // Edit a question and ensure proper scroll to top
+        function scrollToEditForm(id) {
+            // First load the question for editing
+            editQuestion(id);
+            
+            // Then do a more aggressive scroll to top
+            setTimeout(() => {
+                // Try multiple scroll methods for better compatibility
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Backup scroll method
+                setTimeout(() => {
+                    document.body.scrollTop = 0; // For Safari
+                    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+                }, 500);
+                
+                // Show additional guidance
+                showToast('✏️ EDITING MODE: Form is now ready at the top!', 'toast-ai');
+            }, 200);
+        }
+
         // Edit a question (populate the form for editing)
         function editQuestion(id) {
-            editingId = id;
-            const question = questionBank.find(q => q.id === id);
-            if (!question) return;
+            console.log('Editing question with ID:', id, 'Type:', typeof id);
+            console.log('Current question bank:', questionBank);
+            
+            // Convert ID to number if it's a string (from HTML template)
+            const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+            console.log('Converted ID:', numericId, 'Type:', typeof numericId);
+            
+            editingId = numericId;
+            const question = questionBank.find(q => {
+                console.log('Comparing question ID:', q.id, 'Type:', typeof q.id, 'with search ID:', numericId);
+                return q.id === numericId;
+            });
+            
+            if (!question) {
+                console.error('Question not found with ID:', id);
+                showToast('❌ Question not found!', 'toast-error');
+                return;
+            }
+            
+            console.log('Found question:', question);
 
-            document.getElementById('exam-name').value = question.examName;
-            document.getElementById('subject').value = question.subject;
-            $('#subject').trigger('change');
-            document.getElementById('topic').value = question.topic;
-            document.getElementById('question-rich').innerHTML = question.question;
+            // Add visual editing mode to form
+            const formCard = document.querySelector('.card:has(#question-form)');
+            if (formCard) {
+                formCard.classList.add('form-editing');
+            }
 
+            // Clear and populate form fields
+            document.getElementById('exam-name').value = question.examName || '';
+            
+            // Handle subject dropdown with Select2
+            document.getElementById('subject').value = question.subject || '';
+            if (typeof $ !== 'undefined' && $('#subject').hasClass('select2-hidden-accessible')) {
+                $('#subject').trigger('change');
+            }
+            
+            document.getElementById('topic').value = question.topic || '';
+            document.getElementById('question-rich').innerHTML = question.question || '';
+
+            // Clear and rebuild options
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
-            question.options.forEach((opt, index) => {
-                const optionHtml = createOptionHtml(opt);
-                optionsContainer.appendChild(optionHtml);
-                if (String.fromCharCode(65 + index) === question.correctAnswer) {
-                    optionHtml.querySelector('input[type="radio"]').checked = true;
-                }
-            });
-
-            document.getElementById('explanation').innerHTML = question.explanation;
             
+            if (question.options && question.options.length > 0) {
+                question.options.forEach((opt, index) => {
+                    const optionHtml = createOptionHtml(opt);
+                    optionsContainer.appendChild(optionHtml);
+                    if (String.fromCharCode(65 + index) === question.correctAnswer) {
+                        optionHtml.querySelector('input[type="radio"]').checked = true;
+                    }
+                });
+            } else {
+                // Add default options if none exist
+                addOption();
+                addOption();
+            }
+
+            // Populate rich text fields
+            document.getElementById('explanation').innerHTML = question.explanation || '';
+            document.getElementById('discussion').innerHTML = question.discussion || '';
+            
+            // Handle image
             if (question.image) {
                 imagePreview.src = question.image;
                 imagePreview.style.display = 'block';
@@ -1236,14 +2640,100 @@
                 imagePreview.style.display = 'none';
             }
 
-            document.querySelector('#question-form button[type="submit"]').textContent = 'Update Question';
-            showToast('Editing question...', 'toast-ai');
+            // Update form submit button
+            const submitButton = document.querySelector('#question-form button[type="submit"]');
+            if (submitButton) {
+                submitButton.textContent = 'Update Question';
+                submitButton.classList.add('btn-update');
+            }
+            
+            // Add a cancel edit button if it doesn't exist
+            let cancelButton = document.getElementById('cancel-edit-btn');
+            if (!cancelButton) {
+                cancelButton = document.createElement('button');
+                cancelButton.type = 'button';
+                cancelButton.id = 'cancel-edit-btn';
+                cancelButton.className = 'btn btn-secondary';
+                cancelButton.innerHTML = '<i class="fas fa-times"></i> Cancel Edit';
+                cancelButton.onclick = cancelEdit;
+                
+                const actionsDiv = submitButton.parentNode;
+                actionsDiv.insertBefore(cancelButton, submitButton.nextSibling);
+            }
+            cancelButton.style.display = 'inline-block';
+            
+            // Enhanced scroll to form with multiple fallbacks
+            setTimeout(() => {
+                // Method 1: Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Method 2: Scroll to form element specifically
+                const formElement = document.getElementById('question-form');
+                if (formElement) {
+                    formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                
+                // Method 3: Focus on first input (this also ensures visibility)
+                setTimeout(() => {
+                    const examNameInput = document.getElementById('exam-name');
+                    if (examNameInput) {
+                        examNameInput.focus();
+                        examNameInput.select(); // Also select the text for easier editing
+                    }
+                }, 300);
+                
+            }, 100);
+            
+            // Show success message
+            showToast('✏️ Question loaded for editing! Form is populated at the top.', 'toast-ai');
+            
+            console.log('Edit function completed successfully');
+        }
+        
+        // Cancel editing mode
+        function cancelEdit() {
+            editingId = null;
+            
+            // Remove visual editing mode from form
+            const formCard = document.querySelector('.card:has(#question-form)');
+            if (formCard) {
+                formCard.classList.remove('form-editing');
+            }
+            
+            // Reset form
+            document.getElementById('question-form').reset();
+            document.getElementById('question-rich').innerHTML = '';
+            document.getElementById('explanation').innerHTML = '';
+            document.getElementById('discussion').innerHTML = '';
+            document.getElementById('options-container').innerHTML = '';
+            
+            // Add default options
+            addOption();
+            addOption();
+            
+            // Reset submit button
+            const submitButton = document.querySelector('#question-form button[type="submit"]');
+            submitButton.textContent = 'Save Question';
+            submitButton.classList.remove('btn-update');
+            
+            // Hide cancel button
+            const cancelButton = document.getElementById('cancel-edit-btn');
+            if (cancelButton) {
+                cancelButton.style.display = 'none';
+            }
+            
+            // Hide image preview
+            imagePreview.style.display = 'none';
+            
+            showToast('Edit mode cancelled', 'toast');
         }
 
         // Delete a question from the Question Bank
         function deleteQuestion(id) {
             if (confirm('Are you sure you want to delete this question?')) {
-                questionBank = questionBank.filter(q => q.id !== id);
+                // Convert ID to number if it's a string (from HTML template)
+                const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+                questionBank = questionBank.filter(q => q.id !== numericId);
                 saveQuestionBank();
                 renderQuestions();
                 updateStats();
@@ -1295,12 +2785,25 @@
             document.getElementById('internal-medicine').textContent = questionBank.filter(q => q.subject === 'Internal Medicine').length;
         }
 
+        // Generate timestamp for filenames
+        function getTimestampForFilename() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+        }
+
         // Export the question bank to Excel
         function exportToExcel() {
             const dataToExport = [
                 ["Export Date:", new Date().toLocaleString()],
                 [],
-                ["Exam Name", "Subject", "Topic", "Question", "Option A", "Option B", "Option C", "Option D", "Correct Answer", "Explanation", "Source", "Created At", "Updated At"]
+                ["Exam Name", "Subject", "Topic", "Question", "Option A", "Option B", "Option C", "Option D", "Correct Answer", "Explanation", "Discussion", "Source", "Created At", "Updated At"]
             ];
             
             questionBank.forEach(q => {
@@ -1315,6 +2818,7 @@
                     q.options[3] || '',
                     q.correctAnswer,
                     q.explanation.replace(/<[^>]*>?/gm, ''),
+                    q.discussion ? q.discussion.replace(/<[^>]*>?/gm, '') : '',
                     q.source,
                     q.createdAt,
                     q.updatedAt
@@ -1325,42 +2829,555 @@
             const ws = XLSX.utils.aoa_to_sheet(dataToExport);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Questions");
-            XLSX.writeFile(wb, "Medical_Questions.xlsx");
+            const timestamp = getTimestampForFilename();
+            XLSX.writeFile(wb, `Medical_Questions_${timestamp}.xlsx`);
             showToast('Exported to Excel!', 'toast-export');
         }
 
-        // Export the question bank to PDF
+        // Export the question bank to PDF with professional formatting
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.setFontSize(16);
-            doc.text("Medical Exam Question Bank", 10, 10);
-            doc.setFontSize(10);
-            doc.text(`Export Date: ${new Date().toLocaleString()}`, 10, 18);
             
-            doc.setFontSize(12);
-            let y = 30;
-
+            // Define colors and styling
+            const primaryColor = [44, 111, 187]; // Blue
+            const secondaryColor = [142, 68, 173]; // Purple
+            const textColor = [51, 51, 51]; // Dark gray
+            const lightGray = [245, 245, 245];
+            const borderColor = [220, 220, 220];
+            
+            // Header section
+            doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.rect(0, 0, 210, 25, 'F');
+            
+            // Title
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text("📊 Medical Exam Question Bank", 15, 12);
+            
+            // Subtitle
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generated on ${new Date().toLocaleString()}`, 15, 19);
+            
+            // Statistics section
+            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+            doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+            doc.rect(15, 30, 180, 20, 'F');
+            doc.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
+            doc.rect(15, 30, 180, 20, 'S');
+            
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text("📈 Statistics", 20, 38);
+            
+            doc.setFont('helvetica', 'normal');
+            const totalQuestions = questionBank.length;
+            const aiQuestions = questionBank.filter(q => q.source === 'ai').length;
+            const subjects = [...new Set(questionBank.map(q => q.subject))].length;
+            
+            doc.text(`Total Questions: ${totalQuestions} | AI Generated: ${aiQuestions} | Subjects: ${subjects}`, 20, 45);
+            
+            let y = 60;
+            const pageHeight = 297; // A4 height in mm
+            const marginBottom = 20;
+            
             questionBank.forEach((q, index) => {
-                if (y > 280) {
+                // Check if we need a new page
+                if (y > pageHeight - marginBottom - 60) {
                     doc.addPage();
-                    y = 10;
+                    y = 20;
+                    
+                    // Add header to new page
+                    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                    doc.rect(0, 0, 210, 15, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text("Medical Question Bank - Continued", 15, 10);
+                    y = 25;
                 }
-                const questionText = `${index + 1}. ${q.question}`;
-                const optionsText = q.options.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`).join('\n');
-                const answerText = `Correct Answer: ${q.correctAnswer}`;
-                const explanationText = `Explanation: ${q.explanation.replace(/<[^>]*>?/gm, '')}`;
-                const metaText = `Created: ${q.createdAt || 'N/A'} | Updated: ${q.updatedAt || 'N/A'}`;
-
-                const lines = doc.splitTextToSize(
-                    `${questionText}\n\n${optionsText}\n\n${answerText}\n${explanationText}\n\n${metaText}`,
-                    180
-                );
-                doc.text(lines, 10, y);
-                y += doc.getTextDimensions(lines).h + 10;
+                
+                // Question number and metadata box
+                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                doc.setFillColor(245, 248, 255);
+                doc.rect(15, y, 180, 8, 'F');
+                doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                doc.rect(15, y, 180, 8, 'S');
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`Question ${index + 1}`, 20, y + 5);
+                
+                // Subject and topic info
+                doc.setFont('helvetica', 'normal');
+                const metaInfo = `${q.subject} - ${q.topic} | ${q.examName}`;
+                doc.text(metaInfo, 120, y + 5);
+                
+                y += 12;
+                
+                // Question text
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                
+                const questionLines = doc.splitTextToSize(`Q: ${q.question}`, 175);
+                doc.text(questionLines, 20, y);
+                y += questionLines.length * 5 + 3;
+                
+                // Options
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+                
+                q.options.forEach((option, i) => {
+                    const optionLetter = String.fromCharCode(65 + i);
+                    const isCorrect = q.correctAnswer === optionLetter;
+                    
+                    if (isCorrect) {
+                        // Highlight correct answer
+                        doc.setFillColor(230, 255, 230);
+                        doc.rect(20, y - 3, 170, 6, 'F');
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(0, 128, 0);
+                    } else {
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                    }
+                    
+                    const optionLines = doc.splitTextToSize(`${optionLetter}. ${option}`, 165);
+                    doc.text(optionLines, 25, y);
+                    y += optionLines.length * 4 + 1;
+                });
+                
+                y += 3;
+                
+                // Explanation section
+                if (q.explanation) {
+                    // Check if we need a new page for explanation
+                    const estimatedExplanationHeight = 40; // Estimated height
+                    if (y + estimatedExplanationHeight > pageHeight - marginBottom) {
+                        doc.addPage();
+                        y = 20;
+                        
+                        // Add header to new page
+                        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                        doc.rect(0, 0, 210, 15, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(12);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text("Medical Question Bank - Continued", 15, 10);
+                        y = 25;
+                    }
+                    
+                    doc.setFillColor(255, 248, 220);
+                    const explanationHeaderHeight = 6;
+                    doc.rect(20, y - 2, 170, explanationHeaderHeight, 'F');
+                    doc.setDrawColor(255, 193, 7);
+                    doc.rect(20, y - 2, 170, explanationHeaderHeight, 'S');
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(133, 100, 4);
+                    doc.setFontSize(9);
+                    doc.text("💡 Explanation:", 25, y + 2);
+                    y += 8;
+                    
+                    // Process explanation with simple, reliable text formatting
+                    if (q.explanation) {
+                        // Check if we need a new page for explanation
+                        if (y > pageHeight - marginBottom - 30) {
+                            doc.addPage();
+                            y = 20;
+                            
+                            // Add header to new page
+                            doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                            doc.rect(0, 0, 210, 15, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(12);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text("Medical Question Bank - Continued", 15, 10);
+                            y = 25;
+                        }
+                        
+                        // Explanation header
+                        doc.setFillColor(255, 248, 220);
+                        doc.rect(20, y - 2, 170, 6, 'F');
+                        doc.setDrawColor(255, 193, 7);
+                        doc.rect(20, y - 2, 170, 6, 'S');
+                        
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(133, 100, 4);
+                        doc.setFontSize(9);
+                        doc.text("💡 Explanation:", 25, y + 2);
+                        y += 8;
+                        
+                        // Clean explanation text
+                        let explanationText = q.explanation
+                            .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '$1')
+                            .replace(/<b[^>]*>(.*?)<\/b>/gi, '$1')
+                            .replace(/<em[^>]*>(.*?)<\/em>/gi, '$1')
+                            .replace(/<i[^>]*>(.*?)<\/i>/gi, '$1')
+                            .replace(/<u[^>]*>(.*?)<\/u>/gi, '$1')
+                            .replace(/<br\s*\/?>/gi, '\n')
+                            .replace(/<\/p>/gi, '\n')
+                            .replace(/<p[^>]*>/gi, '')
+                            .replace(/<li[^>]*>/gi, '• ')
+                            .replace(/<\/li>/gi, '\n')
+                            .replace(/<ul[^>]*>/gi, '')
+                            .replace(/<\/ul>/gi, '')
+                            .replace(/<ol[^>]*>/gi, '')
+                            .replace(/<\/ol>/gi, '')
+                            .replace(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi, '$1')
+                            .replace(/<[^>]*>/g, '')
+                            .replace(/\n\s*\n/g, '\n')
+                            .trim();
+                        
+                        // Split into manageable chunks
+                        const explanationLines = explanationText.split('\n');
+                        
+                        for (let line of explanationLines) {
+                            if (!line.trim()) {
+                                y += 3;
+                                continue;
+                            }
+                            
+                            // Check page break for each line
+                            if (y > pageHeight - marginBottom - 10) {
+                                doc.addPage();
+                                y = 20;
+                                
+                                // Add header to new page
+                                doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                                doc.rect(0, 0, 210, 15, 'F');
+                                doc.setTextColor(255, 255, 255);
+                                doc.setFontSize(12);
+                                doc.setFont('helvetica', 'bold');
+                                doc.text("Medical Question Bank - Continued", 15, 10);
+                                y = 25;
+                            }
+                            
+                            doc.setFont('helvetica', 'normal');
+                            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                            doc.setFontSize(9);
+                            
+                            const wrappedLines = doc.splitTextToSize(line.trim(), 165);
+                            wrappedLines.forEach((wrappedLine, index) => {
+                                if (y > pageHeight - marginBottom - 5) {
+                                    doc.addPage();
+                                    y = 20;
+                                    
+                                    // Add header to new page
+                                    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                                    doc.rect(0, 0, 210, 15, 'F');
+                                    doc.setTextColor(255, 255, 255);
+                                    doc.setFontSize(12);
+                                    doc.setFont('helvetica', 'bold');
+                                    doc.text("Medical Question Bank - Continued", 15, 10);
+                                    y = 25;
+                                    
+                                    doc.setFont('helvetica', 'normal');
+                                    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                                    doc.setFontSize(9);
+                                }
+                                
+                                doc.text(wrappedLine, 25, y);
+                                y += 4;
+                            });
+                        }
+                        
+                        y += 5;
+                    }
+                    
+                    y += 5;
+                }
+                
+                // Discussion section
+                if (q.discussion) {
+                    // Check if we need a new page for discussion
+                    const estimatedDiscussionHeight = 60; // Estimated height
+                    if (y + estimatedDiscussionHeight > pageHeight - marginBottom) {
+                        doc.addPage();
+                        y = 20;
+                        
+                        // Add header to new page
+                        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                        doc.rect(0, 0, 210, 15, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(12);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text("Medical Question Bank - Continued", 15, 10);
+                        y = 25;
+                    }
+                    
+                    doc.setFillColor(240, 235, 255);
+                    const discussionHeaderHeight = 6;
+                    doc.rect(20, y - 2, 170, discussionHeaderHeight, 'F');
+                    doc.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+                    doc.rect(20, y - 2, 170, discussionHeaderHeight, 'S');
+                    
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+                    doc.setFontSize(9);
+                    doc.text("💬 Discussion:", 25, y + 2);
+                    y += 8;
+                    
+                    // Process discussion with simple, reliable text formatting
+                    if (q.discussion) {
+                        // Check if we need a new page for discussion
+                        if (y > pageHeight - marginBottom - 30) {
+                            doc.addPage();
+                            y = 20;
+                            
+                            // Add header to new page
+                            doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                            doc.rect(0, 0, 210, 15, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(12);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text("Medical Question Bank - Continued", 15, 10);
+                            y = 25;
+                        }
+                        
+                        // Discussion header
+                        doc.setFillColor(240, 235, 255);
+                        doc.rect(20, y - 2, 170, 6, 'F');
+                        doc.setDrawColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+                        doc.rect(20, y - 2, 170, 6, 'S');
+                        
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+                        doc.setFontSize(9);
+                        doc.text("💬 Discussion:", 25, y + 2);
+                        y += 8;
+                        
+                        // Clean discussion text - NO TRUNCATION
+                        let discussionText = q.discussion
+                            .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '$1')
+                            .replace(/<b[^>]*>(.*?)<\/b>/gi, '$1')
+                            .replace(/<em[^>]*>(.*?)<\/em>/gi, '$1')
+                            .replace(/<i[^>]*>(.*?)<\/i>/gi, '$1')
+                            .replace(/<u[^>]*>(.*?)<\/u>/gi, '$1')
+                            .replace(/<br\s*\/?>/gi, '\n')
+                            .replace(/<\/p>/gi, '\n')
+                            .replace(/<p[^>]*>/gi, '')
+                            .replace(/<li[^>]*>/gi, '• ')
+                            .replace(/<\/li>/gi, '\n')
+                            .replace(/<ul[^>]*>/gi, '')
+                            .replace(/<\/ul>/gi, '')
+                            .replace(/<ol[^>]*>/gi, '')
+                            .replace(/<\/ol>/gi, '')
+                            .replace(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/gi, '$1')
+                            .replace(/<[^>]*>/g, '')
+                            .replace(/\n\s*\n/g, '\n')
+                            .trim();
+                        
+                        // Split into manageable chunks
+                        const discussionLines = discussionText.split('\n');
+                        
+                        for (let line of discussionLines) {
+                            if (!line.trim()) {
+                                y += 3;
+                                continue;
+                            }
+                            
+                            // Check page break for each line
+                            if (y > pageHeight - marginBottom - 10) {
+                                doc.addPage();
+                                y = 20;
+                                
+                                // Add header to new page
+                                doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                                doc.rect(0, 0, 210, 15, 'F');
+                                doc.setTextColor(255, 255, 255);
+                                doc.setFontSize(12);
+                                doc.setFont('helvetica', 'bold');
+                                doc.text("Medical Question Bank - Continued", 15, 10);
+                                y = 25;
+                            }
+                            
+                            doc.setFont('helvetica', 'normal');
+                            doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                            doc.setFontSize(9);
+                            
+                            const wrappedLines = doc.splitTextToSize(line.trim(), 165);
+                            wrappedLines.forEach((wrappedLine, index) => {
+                                if (y > pageHeight - marginBottom - 5) {
+                                    doc.addPage();
+                                    y = 20;
+                                    
+                                    // Add header to new page
+                                    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+                                    doc.rect(0, 0, 210, 15, 'F');
+                                    doc.setTextColor(255, 255, 255);
+                                    doc.setFontSize(12);
+                                    doc.setFont('helvetica', 'bold');
+                                    doc.text("Medical Question Bank - Continued", 15, 10);
+                                    y = 25;
+                                    
+                                    doc.setFont('helvetica', 'normal');
+                                    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+                                    doc.setFontSize(9);
+                                }
+                                
+                                doc.text(wrappedLine, 25, y);
+                                y += 4;
+                            });
+                        }
+                        
+                        y += 5;
+                    }
+                    
+                    y += 5;
+                }
+                
+                // Footer info
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'italic');
+                doc.setTextColor(128, 128, 128);
+                const footerText = `Created: ${q.createdAt || 'N/A'} | Source: ${q.source === 'ai' ? '🤖 AI Generated' : '✏️ Manual'} | Creator: ${q.createdBy || 'Unknown'}`;
+                doc.text(footerText, 20, y);
+                y += 8;
+                
+                // Separator line
+                if (index < questionBank.length - 1) {
+                    doc.setDrawColor(200, 200, 200);
+                    doc.line(15, y, 195, y);
+                    y += 8;
+                }
             });
-            doc.save("Medical_Questions.pdf");
-            showToast('Exported to PDF!', 'toast-export');
+            
+            // Add page numbers
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(128, 128, 128);
+                doc.text(`Page ${i} of ${totalPages}`, 180, 290);
+            }
+            
+            const timestamp = getTimestampForFilename();
+            doc.save(`Medical_Questions_${timestamp}.pdf`);
+            showToast('Enhanced PDF exported successfully!', 'toast-export');
+        }
+
+        // Export the question bank to Markdown with clean formatting
+        function exportToMarkdown() {
+            let markdownContent = `# 📊 Medical Exam Question Bank\n\n`;
+            markdownContent += `**Generated on:** ${new Date().toLocaleString()}\n\n`;
+            
+            const totalQuestions = questionBank.length;
+            const aiQuestions = questionBank.filter(q => q.source === 'ai').length;
+            const subjects = [...new Set(questionBank.map(q => q.subject))];
+            
+            markdownContent += `## 📈 Statistics\n\n`;
+            markdownContent += `- **Total Questions:** ${totalQuestions}\n`;
+            markdownContent += `- **AI Generated:** ${aiQuestions}\n`;
+            markdownContent += `- **Manual Questions:** ${totalQuestions - aiQuestions}\n`;
+            markdownContent += `- **Subjects:** ${subjects.join(', ')}\n\n`;
+            markdownContent += `---\n\n`;
+            
+            questionBank.forEach((q, index) => {
+                const isAiGenerated = q.source === 'ai';
+                const correctAnswer = q.correctAnswer;
+                
+                markdownContent += `## Question ${index + 1}\n\n`;
+                markdownContent += `**Exam:** ${q.examName} | **Subject:** ${q.subject} | **Topic:** ${q.topic}\n`;
+                if (isAiGenerated) {
+                    markdownContent += `🤖 *AI Generated Question*\n`;
+                }
+                markdownContent += `\n`;
+                
+                // Clean and format question text
+                const questionText = cleanHtmlForMarkdown(q.question);
+                markdownContent += `**Question:**\n${questionText}\n\n`;
+                
+                // Options
+                markdownContent += `**Options:**\n`;
+                q.options.forEach((option, i) => {
+                    const optionLetter = String.fromCharCode(65 + i);
+                    const isCorrect = correctAnswer === optionLetter;
+                    const cleanOption = cleanHtmlForMarkdown(option);
+                    markdownContent += `${optionLetter}. ${cleanOption}${isCorrect ? ' ✅' : ''}\n`;
+                });
+                markdownContent += `\n`;
+                
+                // Correct Answer
+                markdownContent += `**Correct Answer:** ${correctAnswer}\n\n`;
+                
+                // Explanation
+                if (q.explanation) {
+                    markdownContent += `### 💡 Explanation\n\n`;
+                    const cleanExplanation = cleanHtmlForMarkdown(q.explanation);
+                    markdownContent += `${cleanExplanation}\n\n`;
+                }
+                
+                // Discussion
+                if (q.discussion) {
+                    markdownContent += `### 💬 Discussion\n\n`;
+                    const cleanDiscussion = cleanHtmlForMarkdown(q.discussion);
+                    markdownContent += `${cleanDiscussion}\n\n`;
+                }
+                
+                // Metadata
+                markdownContent += `---\n`;
+                markdownContent += `*Created: ${q.createdAt || 'N/A'} | Source: ${isAiGenerated ? '🤖 AI Generated' : '✏️ Manual'} | Last Updated: ${q.updatedAt || 'N/A'}*\n\n`;
+            });
+            
+            // Create and download the file
+            const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = getTimestampForFilename();
+            a.download = `Medical_Questions_${timestamp}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Exported to Markdown successfully!', 'toast-export');
+        }
+        
+        // Helper function to clean HTML content for Markdown
+        function cleanHtmlForMarkdown(htmlContent) {
+            if (!htmlContent) return '';
+            
+            return htmlContent
+                // Convert HTML formatting to Markdown
+                .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+                .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+                .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+                .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
+                .replace(/<u[^>]*>(.*?)<\/u>/gi, '_$1_')
+                
+                // Convert lists
+                .replace(/<ul[^>]*>/gi, '')
+                .replace(/<\/ul>/gi, '')
+                .replace(/<ol[^>]*>/gi, '')
+                .replace(/<\/ol>/gi, '')
+                .replace(/<li[^>]*>/gi, '- ')
+                .replace(/<\/li>/gi, '\n')
+                
+                // Convert line breaks and paragraphs
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n\n')
+                .replace(/<p[^>]*>/gi, '')
+                
+                // Convert headers
+                .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
+                .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
+                .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n')
+                .replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n')
+                .replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n')
+                .replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n')
+                
+                // Remove any remaining HTML tags
+                .replace(/<[^>]*>/g, '')
+                
+                // Clean up extra whitespace
+                .replace(/\n\s*\n\s*\n/g, '\n\n')
+                .replace(/^\s+|\s+$/g, '')
+                .trim();
         }
 
         // Export question bank as JSON file
@@ -1370,7 +3387,8 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'question_bank.json';
+            const timestamp = getTimestampForFilename();
+            a.download = `question_bank_${timestamp}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1427,6 +3445,7 @@
             const correctAnswer = String.fromCharCode(65 + correctIndex);
 
             const explanation = document.getElementById('explanation').innerHTML;
+            const discussion = document.getElementById('discussion').innerHTML;
             const now = new Date().toLocaleString();
 
             const questionData = {
@@ -1437,15 +3456,34 @@
                 options: options,
                 correctAnswer: correctAnswer,
                 explanation: explanation,
+                discussion: discussion,
                 source: 'manual',
-                image: imagePreview.style.display === 'block' ? imagePreview.src : null
+                image: imagePreview.style.display === 'block' ? imagePreview.src : null,
+                createdBy: getCurrentUserInfo()
             };
 
             if (editingId !== null) {
                 const questionIndex = questionBank.findIndex(q => q.id === editingId);
                 questionBank[questionIndex] = { ...questionBank[questionIndex], ...questionData, updatedAt: now };
                 editingId = null;
-                document.querySelector('#question-form button[type="submit"]').textContent = 'Update Question';
+                
+                // Remove visual editing mode from form
+                const formCard = document.querySelector('.card:has(#question-form)');
+                if (formCard) {
+                    formCard.classList.remove('form-editing');
+                }
+                
+                // Reset submit button
+                const submitButton = document.querySelector('#question-form button[type="submit"]');
+                submitButton.textContent = 'Save Question';
+                submitButton.classList.remove('btn-update');
+                
+                // Hide cancel button
+                const cancelButton = document.getElementById('cancel-edit-btn');
+                if (cancelButton) {
+                    cancelButton.style.display = 'none';
+                }
+                
                 showToast('Question updated successfully!', 'toast');
             } else {
                 questionData.id = Date.now();
@@ -1461,13 +3499,39 @@
             questionForm.reset();
             document.getElementById('question-rich').innerHTML = '';
             document.getElementById('explanation').innerHTML = '';
+            document.getElementById('discussion').innerHTML = '';
             imagePreview.style.display = 'none';
         });
 
         document.getElementById('reset-btn').addEventListener('click', () => {
             editingId = null;
-            document.querySelector('#question-form button[type="submit"]').textContent = 'Save Question';
+            
+            // Remove visual editing mode from form
+            const formCard = document.querySelector('.card:has(#question-form)');
+            if (formCard) {
+                formCard.classList.remove('form-editing');
+            }
+            
+            // Reset submit button
+            const submitButton = document.querySelector('#question-form button[type="submit"]');
+            submitButton.textContent = 'Save Question';
+            submitButton.classList.remove('btn-update');
+            
+            // Hide cancel button
+            const cancelButton = document.getElementById('cancel-edit-btn');
+            if (cancelButton) {
+                cancelButton.style.display = 'none';
+            }
+            
             document.getElementById('explanation').innerHTML = '';
+            document.getElementById('discussion').innerHTML = '';
+            document.getElementById('question-rich').innerHTML = '';
+            document.getElementById('options-container').innerHTML = '';
+            
+            // Add default options
+            addOption();
+            addOption();
+            
             imagePreview.style.display = 'none';
         });
 
@@ -1543,11 +3607,57 @@
             }
         }
 
+        // Discussion formatting functions
+        function formatDiscussion(command) {
+            const discussionEditor = document.getElementById('discussion');
+            discussionEditor.focus();
+            document.execCommand(command, false, null);
+        }
+
+        function insertDiscussionImage() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = `<img src="${e.target.result}" style="max-width: 100%; display: block; margin: 10px 0; border-radius: 4px;">`;
+                        insertHtmlAtCursorInDiscussion(img);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+
+        function insertHtmlAtCursorInDiscussion(html) {
+            const discussionDiv = document.getElementById('discussion');
+            discussionDiv.focus();
+            if (window.getSelection) {
+                const sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    const range = sel.getRangeAt(0);
+                    const el = document.createElement('div');
+                    el.innerHTML = html;
+                    const frag = document.createDocumentFragment();
+                    let node, lastNode;
+                    while ((node = el.firstChild)) {
+                        lastNode = frag.appendChild(node);
+                    }
+                    range.deleteContents();
+                    range.insertNode(frag);
+                }
+            }
+        }
+
         // --- AI Generation ---
         // Generate AI explanation for a question
         document.getElementById('generate-explanation-btn').addEventListener('click', async function() {
-            // Gather question and options
-            const question = document.getElementById('question').value.trim();
+            // Gather question and options from the rich text editor
+            const questionRich = document.getElementById('question-rich').innerHTML.trim();
+            const question = questionRich || document.getElementById('question')?.value?.trim() || '';
             const optionsNodes = document.querySelectorAll('#options-container .option-input');
             let options = [];
             let correctIndex = -1;
@@ -1560,46 +3670,272 @@
                 showToast('Please enter the question, at least two options, and select the correct answer.', 'toast-error');
                 return;
             }
-            const correctOption = options[correctIndex];
+            
+            // Use the same API configuration as the main AI generation section
+            const apiKey = document.getElementById('api-key').value.trim();
+            const model = document.getElementById('ai-model').value;
+            
+            if (!apiKey) {
+                showToast('Please enter your API key in the AI Question Generation section first.', 'toast-error');
+                return;
+            }
+            
             // Compose prompt
             let prompt = `You are an expert medical educator. Provide an evidence-based explanation for the following question.\n\nFirst, give a brief introduction about the main topic of the question.\nThen, explain why the correct option is correct, citing evidence-based medicine (EBM) or clinical guidelines if possible.\nThen, for each incorrect option, explain one by one why it is incorrect, also based on EBM.\n\nQuestion: ${question}\nOptions:`;
             options.forEach((opt, i) => {
                 prompt += `\n${String.fromCharCode(65+i)}. ${opt}`;
             });
             prompt += `\n\nCorrect Answer: ${String.fromCharCode(65+correctIndex)}\n\nFormat the response as follows:\nIntroduction: ...\nCorrect Option (${String.fromCharCode(65+correctIndex)}): ...\nIncorrect Options:\nA: ...\nB: ...\nC: ...\nD: ...\n(Include only the relevant options)\nAll explanations must be based on evidence-based medicine.`;
-            // Use existing API config
-            const apiKey = localStorage.getItem('openaiApiKey') || '';
-            const model = localStorage.getItem('openaiModel') || 'gpt-3.5-turbo';
-            if (!apiKey) {
-                showToast('Please enter your API key in the AI Configuration.', 'toast-error');
-                return;
-            }
-            // Prepare OpenAI API call
-            const apiUrl = 'https://api.openai.com/v1/chat/completions';
-            const headers = {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            };
+            
+            // Prepare API call using the same structure as main AI generation
             const messages = [
                 { role: 'system', content: 'You are a medical education assistant. Give concise, clear explanations.' },
                 { role: 'user', content: prompt }
             ];
-            const body = JSON.stringify({ model, messages });
+            
             // Show loading
             const explanationDiv = document.getElementById('explanation');
             explanationDiv.innerHTML = '<em>Generating explanation with AI...</em>';
+            
             try {
-                const response = await fetch(apiUrl, { method: 'POST', headers, body });
-                if (!response.ok) throw new Error('API error');
+                let apiUrl, requestBody, headers;
+
+                // Configure API call based on selected model (same as main generation)
+                if (model.startsWith('gpt')) {
+                    apiUrl = 'https://api.openai.com/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    requestBody = JSON.stringify({
+                        model: model,
+                        messages: messages
+                    });
+                } else if (model.startsWith('gemini')) {
+                    apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    headers = {
+                        'Content-Type': 'application/json'
+                    };
+                    requestBody = JSON.stringify({
+                        "contents": [{
+                            "role": "user",
+                            "parts": [{ "text": prompt }]
+                        }],
+                        "safetySettings": [
+                            { "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE" },
+                            { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE" },
+                            { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE" },
+                            { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE" }
+                        ]
+                    });
+                } else if (model.startsWith('deepseek')) {
+                    apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    requestBody = JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        stream: false
+                    });
+                } else {
+                    showToast('Selected model is not supported.', 'toast-error');
+                    return;
+                }
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: requestBody
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+                }
+                
                 const data = await response.json();
-                let content = data.choices[0].message.content;
+                let content;
+                
+                // Parse response based on model (same as main generation)
+                if (model.startsWith('gpt') || model.startsWith('deepseek')) {
+                    content = data.choices[0].message.content;
+                } else if (model.startsWith('gemini')) {
+                    content = data.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error('Unsupported model response format.');
+                }
+                
                 explanationDiv.innerHTML = content.replace(/\n/g, '<br>');
                 showToast('AI explanation generated!', 'toast-ai');
             } catch (err) {
                 explanationDiv.innerHTML = '';
-                showToast('Failed to generate explanation.', 'toast-error');
+                console.error('Explanation generation error:', err);
+                showToast('Failed to generate explanation. Check your API key and connection.', 'toast-error');
             }
         });
+
+        // Generate AI discussion for a question (manual form)
+        document.getElementById('generate-discussion-btn').addEventListener('click', async function() {
+            // Use the same API configuration as the main AI generation section
+            const apiKey = document.getElementById('api-key').value.trim();
+            const model = document.getElementById('ai-model').value;
+            
+            if (!apiKey) {
+                showToast('Please enter your API key in the AI Question Generation section first.', 'toast-error');
+                return;
+            }
+
+            // Gather question data from the rich text editor
+            const question = document.getElementById('question-rich').innerHTML.trim() || document.getElementById('question')?.value?.trim() || '';
+            const optionsNodes = document.querySelectorAll('#options-container .option-input');
+            let options = [];
+            let correctIndex = -1;
+            
+            optionsNodes.forEach((node, idx) => {
+                const text = node.querySelector('input[type="text"]').value.trim();
+                options.push(text);
+                if (node.querySelector('input[type="radio"]').checked) correctIndex = idx;
+            });
+
+            if (!question || options.length < 2 || correctIndex === -1) {
+                showToast('Please enter the question, at least two options, and select the correct answer.', 'toast-error');
+                return;
+            }
+
+            const subject = document.getElementById('subject').value;
+            const topic = document.getElementById('topic').value;
+
+            // Create comprehensive discussion prompt
+            let prompt = `You are an expert medical educator. Create a comprehensive, well-structured discussion about the following medical question that includes:
+
+1. **Introduction**: Brief overview of the main topic/condition
+2. **Pathophysiology**: Underlying mechanisms (if applicable)
+3. **Clinical Presentation**: Signs, symptoms, and diagnostic findings
+4. **Differential Diagnosis**: Other conditions to consider
+5. **Management**: Treatment approaches and guidelines
+6. **Key Learning Points**: Important takeaways for medical students
+7. **Clinical Pearls**: Practical tips for clinical practice
+
+Make the discussion educational, evidence-based, and suitable for medical students. Use proper medical terminology but explain complex concepts clearly.
+
+**Question**: ${question}
+**Subject**: ${subject}
+**Topic**: ${topic}
+**Options**:`;
+            
+            options.forEach((opt, i) => {
+                prompt += `\n${String.fromCharCode(65+i)}. ${opt}`;
+            });
+            
+            prompt += `\n**Correct Answer**: ${String.fromCharCode(65 + correctIndex)}\n\nProvide the comprehensive discussion:`;
+
+            // Show loading
+            const loadingEl = document.getElementById('discussion-loading');
+            const generateBtn = document.getElementById('generate-discussion-btn');
+            
+            loadingEl.classList.add('show');
+            generateBtn.disabled = true;
+
+            try {
+                let apiUrl, requestBody, headers;
+
+                // Configure API call based on selected model (same as main generation)
+                if (model.startsWith('gpt')) {
+                    apiUrl = 'https://api.openai.com/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    requestBody = JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: 'system', content: 'You are a medical education expert. Create well-structured, comprehensive discussions that help medical students learn effectively.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    });
+                } else if (model.startsWith('gemini')) {
+                    apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    headers = { 'Content-Type': 'application/json' };
+                    requestBody = JSON.stringify({
+                        contents: [{ role: "user", parts: [{ text: prompt }] }],
+                        generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
+                        "safetySettings": [
+                            { "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE" },
+                            { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE" },
+                            { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE" },
+                            { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE" }
+                        ]
+                    });
+                } else if (model.startsWith('deepseek')) {
+                    apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    requestBody = JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: 'system', content: 'You are a medical education expert. Create well-structured, comprehensive discussions that help medical students learn effectively.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    });
+                } else {
+                    showToast('Selected model is not supported.', 'toast-error');
+                    loadingEl.classList.remove('show');
+                    generateBtn.disabled = false;
+                    return;
+                }
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: requestBody
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+                }
+
+                const data = await response.json();
+                let content;
+                
+                // Parse response based on model (same as main generation)
+                if (model.startsWith('gpt') || model.startsWith('deepseek')) {
+                    content = data.choices[0].message.content;
+                } else if (model.startsWith('gemini')) {
+                    content = data.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error('Unsupported model response format.');
+                }
+                
+                // Clean the content to remove unwanted AI introductory phrases
+                content = cleanAiDiscussionContent(content);
+                
+                // Format the content with proper HTML structure
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                content = content.replace(/\n\n/g, '</p><p>');
+                content = content.replace(/\n/g, '<br>');
+                content = `<p>${content}</p>`;
+
+                document.getElementById('discussion').innerHTML = content;
+                showToast('AI discussion generated successfully!', 'toast-ai');
+                
+            } catch (error) {
+                console.error('Discussion generation error:', error);
+                showToast('Failed to generate discussion. Please check your API key and try again.', 'toast-error');
+            } finally {
+                loadingEl.classList.remove('show');
+                generateBtn.disabled = false;
+            }
+        });
+
         document.getElementById('import-excel-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1612,21 +3948,31 @@
                 const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
                 // Expect columns: Question, Options, Answer, Subject, Exam, Topic, Source
                 let imported = 0;
+                const now = new Date().toLocaleString();
+                const creatorInfo = getCurrentUserInfo();
+                
                 json.forEach(row => {
                     if (row.Question && row.Answer) {
                         questionBank.push({
+                            id: Date.now() + imported, // Ensure unique IDs
                             question: row.Question,
                             options: row.Options ? row.Options.split(';') : [],
-                            answer: row.Answer,
+                            correctAnswer: row.Answer,
                             subject: row.Subject || '',
-                            exam: row.Exam || '',
+                            examName: row.Exam || '',
                             topic: row.Topic || '',
-                            source: row.Source || 'imported'
+                            explanation: row.Explanation || '',
+                            source: row.Source || 'imported',
+                            image: null,
+                            createdAt: now,
+                            updatedAt: now,
+                            createdBy: creatorInfo
                         });
                         imported++;
                     }
                 });
-                localStorage.setItem('medicalQuestionBank', JSON.stringify(questionBank));
+                const storageKey = getUserStorageKey('medicalQuestionBank');
+                localStorage.setItem(storageKey, JSON.stringify(questionBank));
                 if (typeof renderQuestions === 'function') renderQuestions();
                 showToast(imported + ' questions imported from Excel!', 'toast-export');
                 e.target.value = '';
@@ -1669,16 +4015,7 @@
             // Show user profile
             userProfileSection.style.display = 'flex';
             
-            // Update user info
-            const userAvatar = document.getElementById('userAvatar');
-            const userName = document.getElementById('userName');
-            const userEmail = document.getElementById('userEmail');
-            
             if (user.isGuest) {
-                userAvatar.textContent = 'G';
-                userAvatar.style.background = 'rgba(255, 193, 7, 0.8)';
-                userName.textContent = 'Guest User';
-                userEmail.textContent = 'Limited features';
                 guestNotice.style.display = 'flex';
                 userProfileSection.style.display = 'none';
             } else {
@@ -1687,10 +4024,47 @@
                     ? user.displayName.split(' ').map(n => n[0]).join('').toUpperCase()
                     : user.email[0].toUpperCase();
                 
-                userAvatar.textContent = initials;
-                userAvatar.style.background = 'rgba(255, 255, 255, 0.3)';
-                userName.textContent = user.displayName || 'User';
-                userEmail.textContent = user.email;
+                // Update user icon
+                const userIcon = document.getElementById('userInitials');
+                const profileAvatar = document.getElementById('profileAvatar');
+                const modalAvatar = document.getElementById('modalAvatar');
+                
+                userIcon.textContent = initials;
+                profileAvatar.textContent = initials;
+                modalAvatar.textContent = initials;
+                
+                // Update profile info in dropdown
+                document.getElementById('profileName').textContent = user.displayName || 'User';
+                document.getElementById('profileEmail').textContent = user.email;
+                
+                // Update profile info in modal
+                document.getElementById('modalName').textContent = user.displayName || 'User';
+                document.getElementById('modalEmail').textContent = user.email;
+                document.getElementById('modalDisplayName').textContent = user.displayName || 'Not set';
+                document.getElementById('modalUserEmail').textContent = user.email;
+                
+                // Set join date
+                const joinDate = user.metadata && user.metadata.creationTime 
+                    ? new Date(user.metadata.creationTime).toLocaleDateString()
+                    : 'Unknown';
+                document.getElementById('modalJoinDate').textContent = joinDate;
+                
+                // Set provider info
+                const providerData = user.providerData && user.providerData[0];
+                let providerName = 'Email';
+                if (providerData) {
+                    if (providerData.providerId === 'google.com') providerName = 'Google';
+                    else if (providerData.providerId === 'github.com') providerName = 'GitHub';
+                    else if (providerData.providerId === 'facebook.com') providerName = 'Facebook';
+                }
+                document.getElementById('modalProvider').textContent = providerName;
+                
+                // Set questions count
+                const userQuestions = questions.filter(q => q.createdBy === user.email || q.createdBy === user.displayName);
+                document.getElementById('modalQuestionsCount').textContent = userQuestions.length;
+                
+                // Setup dropdown and modal functionality
+                setupUserIconHandlers();
             }
 
             // Load user-specific data
@@ -1714,6 +4088,77 @@
                 showToast('Logged out successfully', 'success');
                 showLoginSection();
             }
+        }
+
+        function setupUserIconHandlers() {
+            const userIcon = document.getElementById('userIcon');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const profileModal = document.getElementById('profileModal');
+            const viewProfileBtn = document.getElementById('viewProfileBtn');
+            const modalClose = document.getElementById('modalClose');
+            
+            // Toggle dropdown when clicking user icon
+            userIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isVisible = profileDropdown.classList.contains('show');
+                
+                if (isVisible) {
+                    profileDropdown.classList.remove('show');
+                    userIcon.classList.remove('active');
+                } else {
+                    profileDropdown.classList.add('show');
+                    userIcon.classList.add('active');
+                }
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+                    profileDropdown.classList.remove('show');
+                    userIcon.classList.remove('active');
+                }
+            });
+            
+            // Show profile modal when clicking "View Profile"
+            viewProfileBtn.addEventListener('click', function() {
+                profileDropdown.classList.remove('show');
+                userIcon.classList.remove('active');
+                profileModal.classList.add('show');
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
+            });
+            
+            // Close modal
+            function closeModal() {
+                profileModal.classList.remove('show');
+                document.body.style.overflow = ''; // Restore scroll
+            }
+            
+            modalClose.addEventListener('click', closeModal);
+            
+            // Close modal when clicking outside
+            profileModal.addEventListener('click', function(e) {
+                if (e.target === profileModal) {
+                    closeModal();
+                }
+            });
+            
+            // Close modal with ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && profileModal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Get current user information for question creation
+        function getCurrentUserInfo() {
+            if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+                const user = firebase.auth().currentUser;
+                return user.displayName || user.email?.split('@')[0] || 'User';
+            }
+            
+            // Fallback for guest users or when Firebase is not available
+            return 'Anonymous User';
         }
 
         function getUserStorageKey(key) {
@@ -1742,6 +4187,9 @@
         function initApp() {
             // Initialize authentication
             initAuth();
+            
+            // Load existing question bank from localStorage
+            questionBank = loadUserQuestionBank();
             
             if (openAiApiKey) {
                 apiKeyInput.value = openAiApiKey;
@@ -1933,6 +4381,9 @@
                 displayAiQuestion(currentAiQuestion);
                 showToast('AI question generated successfully!', 'toast-ai');
 
+                // Automatically generate discussion for AI question
+                await generateAiDiscussion(currentAiQuestion);
+
             } catch (error) {
                 console.error('Error generating AI question:', error);
                 showToast(`AI generation failed: ${error.message}`, 'toast-error');
@@ -1951,6 +4402,209 @@
                 throw new Error('Unsupported model response format.');
             }
             return JSON.parse(content);
+        }
+
+        // Generate AI discussion for the current AI question
+        async function generateAiDiscussion(questionData) {
+            const apiKey = document.getElementById('api-key').value.trim();
+            const model = document.getElementById('ai-model').value;
+            
+            if (!apiKey) return;
+
+            try {
+                // Create comprehensive discussion prompt
+                let prompt = `You are an expert medical educator. Create a comprehensive, well-structured discussion about the following medical question that includes:
+
+1. **Introduction**: Brief overview of the main topic/condition
+2. **Pathophysiology**: Underlying mechanisms (if applicable)
+3. **Clinical Presentation**: Signs, symptoms, and diagnostic findings
+4. **Differential Diagnosis**: Other conditions to consider
+5. **Management**: Treatment approaches and guidelines
+6. **Key Learning Points**: Important takeaways for medical students
+7. **Clinical Pearls**: Practical tips for clinical practice
+
+Make the discussion educational, evidence-based, and suitable for medical students preparing for ${questionData.examName}. Use proper medical terminology but explain complex concepts clearly.
+
+**Question**: ${questionData.question}
+**Subject**: ${questionData.subject}
+**Topic**: ${questionData.topic}
+**Options**:
+${questionData.options.map((opt, i) => `${String.fromCharCode(65+i)}. ${opt}`).join('\n')}
+**Correct Answer**: ${questionData.correctAnswer}
+
+Provide the comprehensive discussion formatted with proper headings and structure:`;
+
+                const messages = [
+                    { role: 'system', content: 'You are a medical education expert. Create well-structured, comprehensive discussions that help medical students learn effectively.' },
+                    { role: 'user', content: prompt }
+                ];
+
+                let apiUrl, requestBody, headers;
+
+                // Configure API call based on selected model
+                if (model.startsWith('gpt')) {
+                    apiUrl = 'https://api.openai.com/v1/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    requestBody = JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    });
+                } else if (model.startsWith('gemini')) {
+                    apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    headers = { 'Content-Type': 'application/json' };
+                    requestBody = JSON.stringify({
+                        contents: [{ role: "user", parts: [{ text: prompt }] }],
+                        generationConfig: { maxOutputTokens: 2000, temperature: 0.7 }
+                    });
+                } else if (model.startsWith('deepseek')) {
+                    apiUrl = 'https://api.deepseek.com/chat/completions';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    requestBody = JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        max_tokens: 2000,
+                        temperature: 0.7
+                    });
+                }
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: headers,
+                    body: requestBody
+                });
+
+                if (!response.ok) {
+                    throw new Error('Discussion generation failed');
+                }
+
+                const data = await response.json();
+                let content;
+
+                if (model.startsWith('gpt') || model.startsWith('deepseek')) {
+                    content = data.choices[0].message.content;
+                } else if (model.startsWith('gemini')) {
+                    content = data.candidates[0].content.parts[0].text;
+                }
+
+                // Clean the content to remove unwanted AI introductory phrases
+                content = cleanAiDiscussionContent(content);
+
+                // Format the content with proper HTML structure
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                content = content.replace(/\n\n/g, '</p><p>');
+                content = content.replace(/\n/g, '<br>');
+                content = `<p>${content}</p>`;
+
+                // Store the discussion with the current AI question
+                currentAiQuestion.discussion = content;
+                
+                // Display the discussion
+                displayAiDiscussion(content);
+                
+            } catch (error) {
+                console.error('Discussion generation error:', error);
+                // Silently fail for discussion generation - don't show error toast
+            }
+        }
+
+        // Display AI-generated discussion
+        function displayAiDiscussion(discussionContent) {
+            document.getElementById('ai-discussion-text').innerHTML = discussionContent;
+            document.getElementById('ai-discussion-result').style.display = 'block';
+        }
+        
+        // Clean AI discussion content by removing unwanted introductory paragraphs
+        function cleanAiDiscussionContent(content) {
+            if (!content) return content;
+            
+            // List of common unwanted introductory phrases that AI models tend to use
+            const unwantedIntros = [
+                /^Of course[.,!]?\s*/i,
+                /^Certainly[.,!]?\s*/i,
+                /^Here is a comprehensive.*?(?:discussion|analysis).*?(?:\.|:)\s*/i,
+                /^I'll provide a comprehensive.*?(?:discussion|analysis).*?(?:\.|:)\s*/i,
+                /^Let me provide.*?(?:discussion|analysis).*?(?:\.|:)\s*/i,
+                /^This is a comprehensive.*?(?:discussion|analysis).*?(?:\.|:)\s*/i,
+                /^Below is a comprehensive.*?(?:discussion|analysis).*?(?:\.|:)\s*/i,
+                /^Here's a detailed.*?(?:discussion|analysis).*?(?:\.|:)\s*/i,
+                /^The following is.*?(?:discussion|analysis).*?(?:\.|:)\s*/i
+            ];
+            
+            // List of common unwanted concluding phrases that AI models tend to use
+            const unwantedConclusions = [
+                /By understanding.*?(?:medical students|students|learners|healthcare professionals).*?(?:can|will).*?(?:enhance|improve|develop|strengthen).*?(?:skills|knowledge|understanding|competence|acumen).*?[.,!]?\s*$/i,
+                /This (?:case|discussion|analysis).*?(?:highlights|demonstrates|illustrates|emphasizes).*?(?:importance|need|significance).*?[.,!]?\s*$/i,
+                /(?:Medical students|Students|Healthcare professionals).*?(?:should|must|need to|ought to).*?(?:understand|recognize|appreciate|be aware of).*?[.,!]?\s*$/i,
+                /Understanding.*?(?:is|are).*?(?:crucial|essential|important|vital|critical).*?(?:for|in).*?(?:medical practice|clinical practice|healthcare|patient care).*?[.,!]?\s*$/i,
+                /This knowledge.*?(?:is|will be).*?(?:essential|important|crucial|valuable).*?(?:for|in).*?(?:clinical|medical|healthcare).*?[.,!]?\s*$/i,
+                /In conclusion.*?(?:understanding|knowledge|awareness).*?(?:of|about).*?(?:is|are).*?(?:important|essential|crucial).*?[.,!]?\s*$/i,
+                /(?:Proper|Effective|Timely|Early).*?(?:recognition|diagnosis|management|treatment).*?(?:is|are).*?(?:key|essential|crucial|important).*?(?:to|for).*?(?:successful|optimal|effective).*?[.,!]?\s*$/i,
+                /These (?:concepts|principles|guidelines|strategies).*?(?:are|will be).*?(?:fundamental|essential|important|valuable).*?(?:for|in).*?(?:medical education|clinical practice|patient care).*?[.,!]?\s*$/i
+            ];
+            
+            // Remove unwanted introductory sentences
+            let cleanedContent = content;
+            unwantedIntros.forEach(pattern => {
+                cleanedContent = cleanedContent.replace(pattern, '');
+            });
+            
+            // Remove unwanted concluding sentences
+            unwantedConclusions.forEach(pattern => {
+                cleanedContent = cleanedContent.replace(pattern, '');
+            });
+            
+            // Also remove any leading paragraph that starts with these patterns
+            const paragraphs = cleanedContent.split(/\n\s*\n/);
+            if (paragraphs.length > 0) {
+                const firstParagraph = paragraphs[0].trim();
+                const shouldRemoveFirstParagraph = unwantedIntros.some(pattern => 
+                    pattern.test(firstParagraph)
+                );
+                
+                if (shouldRemoveFirstParagraph) {
+                    paragraphs.shift(); // Remove the first paragraph
+                    cleanedContent = paragraphs.join('\n\n');
+                }
+            }
+            
+            // Also remove any ending paragraph that matches concluding patterns
+            if (paragraphs.length > 0) {
+                const lastParagraph = paragraphs[paragraphs.length - 1].trim();
+                const shouldRemoveLastParagraph = unwantedConclusions.some(pattern => 
+                    pattern.test(lastParagraph)
+                );
+                
+                if (shouldRemoveLastParagraph) {
+                    paragraphs.pop(); // Remove the last paragraph
+                    cleanedContent = paragraphs.join('\n\n');
+                }
+            }
+            
+            return cleanedContent.trim();
+        }
+
+        // Regenerate AI discussion
+        async function regenerateAiDiscussion() {
+            if (currentAiQuestion) {
+                document.getElementById('ai-discussion-result').style.display = 'none';
+                await generateAiDiscussion(currentAiQuestion);
+            }
+        }
+
+        // Use AI discussion - copy to manual form
+        function useAiDiscussion() {
+            if (currentAiQuestion && currentAiQuestion.discussion) {
+                document.getElementById('discussion').innerHTML = currentAiQuestion.discussion;
+                showToast('Discussion copied to manual form!', 'toast-ai');
+            }
         }
 
         function regenerateQuestion() {
@@ -2029,10 +4683,12 @@
                 options: currentAiQuestion.options,
                 correctAnswer: currentAiQuestion.correctAnswer,
                 explanation: currentAiQuestion.explanation,
+                discussion: currentAiQuestion.discussion || '',
                 source: 'ai',
                 image: null,
                 createdAt: now,
-                updatedAt: now
+                updatedAt: now,
+                createdBy: getCurrentUserInfo()
             };
 
             questionBank.unshift(newQuestion);
@@ -2041,6 +4697,7 @@
             updateStats();
 
             aiResult.style.display = 'none';
+            document.getElementById('ai-discussion-result').style.display = 'none';
             document.getElementById('ai-topic').value = '';
             currentAiQuestion = null;
             aiFileContent = null;
@@ -2049,9 +4706,129 @@
             showToast('AI question saved to question bank!', 'toast');
         }
 
+        // --- Dropdown Functions ---
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const button = document.getElementById(dropdownId + 'Btn');
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu.id !== dropdownId) {
+                    menu.classList.remove('show');
+                }
+            });
+            
+            document.querySelectorAll('.dropdown-btn').forEach(btn => {
+                if (btn.id !== dropdownId + 'Btn') {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Toggle current dropdown
+            dropdown.classList.toggle('show');
+            button.classList.toggle('active');
+        }
+
+        function closeDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const button = document.getElementById(dropdownId + 'Btn');
+            
+            dropdown.classList.remove('show');
+            button.classList.remove('active');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown-container');
+            
+            dropdowns.forEach(container => {
+                if (!container.contains(event.target)) {
+                    const dropdown = container.querySelector('.dropdown-menu');
+                    const button = container.querySelector('.dropdown-btn');
+                    
+                    dropdown.classList.remove('show');
+                    button.classList.remove('active');
+                }
+            });
+        });
+
+        // Close dropdowns on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+                document.querySelectorAll('.dropdown-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+            }
+        });
+
         // --- Initialization ---
         // Initialize the app on page load
         initApp();
     </script>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <h3><i class="fas fa-brain"></i> QBank Generator</h3>
+                        <p>Medical Question Bank Management System</p>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Navigation</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="auth.html"><i class="fas fa-sign-in-alt"></i> Authentication</a></li>
+                        <li><a href="#question-form"><i class="fas fa-plus"></i> Add Question</a></li>
+                        <li><a href="#questions-list"><i class="fas fa-list"></i> Question Bank</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Features</h4>
+                    <ul class="footer-links">
+                        <li><span><i class="fas fa-robot"></i> AI Generation</span></li>
+                        <li><span><i class="fas fa-file-export"></i> Export (PDF, Excel, JSON)</span></li>
+                        <li><span><i class="fas fa-file-import"></i> Import Questions</span></li>
+                        <li><span><i class="fas fa-search"></i> Advanced Filtering</span></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <div class="social-links">
+                        <a href="https://qbgenerator.aimedipedia.com" target="_blank" title="Live Site">
+                            <i class="fas fa-globe"></i>
+                        </a>
+                        <a href="https://github.com/yourusername/medical-question-bank-generator" target="_blank" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="index.html" title="Landing Page">
+                            <i class="fas fa-info-circle"></i>
+                        </a>
+                    </div>
+                    <p class="footer-domain">qbgenerator.aimedipedia.com</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-info">
+                    <p>&copy; 2025 Medical Question Bank Generator by <strong>AI Medipedia</strong></p>
+                    <p class="footer-subtitle">Professional medical education platform</p>
+                </div>
+                <div class="footer-badges">
+                    <span class="badge">Offline Ready</span>
+                    <span class="badge">User Private</span>
+                    <span class="badge">Export Anywhere</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
